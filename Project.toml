@@ -1,0 +1,4 @@
+name = "AbstractLinearOperators"
+uuid = "5410e3fe-0e5d-4700-95f7-ee2c7a54c20b"
+authors = ["Gabrio Rizzuti <rizzuti.gabrio@gmail.com>"]
+version = "0.1.0"
