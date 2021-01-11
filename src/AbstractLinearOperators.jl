@@ -7,6 +7,7 @@ import LinearAlgebra: adjoint
 
 # Abstract type
 include("./abstract_type.jl")
+include("./concrete_type.jl")
 
 # Utils
 include("./utils.jl")
