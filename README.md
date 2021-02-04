@@ -1,3 +1,3 @@
 # AbstractLinearOperators
 
-Minimal implementation of abstract linear operators
+Abstraction of linear operators and related linear algebra, +/-/* etc.
