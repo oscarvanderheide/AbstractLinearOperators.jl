@@ -2,6 +2,7 @@
 
 export LinearOperator, linear_operator
 export IdentityOperator, identity_operator
+export domain_size, range_size
 
 
 # Generic linear operator

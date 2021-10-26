@@ -1,6 +1,7 @@
 #: Abstract types
 
 export AbstractLinearOperator
+export size
 
 
 """
