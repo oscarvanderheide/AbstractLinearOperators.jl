@@ -9,9 +9,6 @@ import LinearAlgebra: adjoint
 include("./abstract_type.jl")
 include("./concrete_type.jl")
 
-# Utils
-include("./utils.jl")
-
 # Algebra
 include("./linear_algebra.jl")
 

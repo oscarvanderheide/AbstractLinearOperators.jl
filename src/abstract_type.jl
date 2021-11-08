@@ -1,7 +1,5 @@
 #: Abstract types
-
-export AbstractLinearOperator
-export size, domain, range
+export AbstractLinearOperator, size, domain, range, size_vec, deltype, dtype, reltype, rtype
 
 
 """
@@ -25,3 +23,11 @@ show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
 
 domain(::AbstractLinearOperator{DT,RT}) where {DT,RT} = DT
 range(::AbstractLinearOperator{DT,RT}) where {DT,RT} = RT
+size_vec(A::AbstractLinearOperator) = (prod(range_size(A)), prod(domain_size(A)))
+deltype(::AbstractLinearOperator{DT,RT}) where {DT,RT} = eltype(DT)
+dtype(::AbstractLinearOperator{DT,RT}) where {DT,RT} = DT
+reltype(::AbstractLinearOperator{DT,RT}) where {DT,RT} = eltype(RT)
+rtype(::AbstractLinearOperator{DT,RT}) where {DT,RT} = RT
+info(A::AbstractLinearOperator) = print(
+    "Linear operator, domain: size(", domain(A), ") = ", domain_size(A), "\n",
+    "                 range:  size(", range(A), ") = ", range_size(A))
