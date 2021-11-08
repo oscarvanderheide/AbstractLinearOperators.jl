@@ -2,7 +2,7 @@
 
 export LinearOperator, linear_operator
 export IdentityOperator, identity_operator
-export domain, domain_size, range, range_size
+export domain_size, range_size
 
 
 # Generic linear operator
@@ -14,9 +14,7 @@ struct LinearOperator{DT,RT}<:AbstractLinearOperator{DT,RT}
     matvecprod_adj::Function
 end
 
-domain(::LinearOperator{DT,RT}) where {DT,RT} = DT
 domain_size(L::LinearOperator{DT,RT}) where {DT,RT} = L.domain_size
-range(::LinearOperator{DT,RT}) where {DT,RT} = RT
 range_size(L::LinearOperator{DT,RT}) where {DT,RT} = L.range_size
 matvecprod(L::LinearOperator{DT,RT}, u::DT) where {DT,RT} = L.matvecprod(u)
 matvecprod_adj(L::LinearOperator{DT,RT}, v::RT) where {DT,RT} = L.matvecprod_adj(v)

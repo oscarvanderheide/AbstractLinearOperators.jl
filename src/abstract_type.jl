@@ -1,7 +1,7 @@
 #: Abstract types
 
 export AbstractLinearOperator
-export size
+export size, domain, range
 
 
 """
@@ -19,3 +19,9 @@ abstract type AbstractLinearOperator{DT<:AbstractArray,RT<:AbstractArray} end
 size(A::AbstractLinearOperator) = (range_size(A), domain_size(A))
 show(::IO, A::AbstractLinearOperator) = info(A)
 show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
+
+
+# Utils
+
+domain(::AbstractLinearOperator{DT,RT}) where {DT,RT} = DT
+range(::AbstractLinearOperator{DT,RT}) where {DT,RT} = RT
