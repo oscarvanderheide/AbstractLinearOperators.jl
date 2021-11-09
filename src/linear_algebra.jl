@@ -62,7 +62,7 @@ matvecprod_adj(A::MultLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,
 ## AdjointLinearOperators: adjoint(A)
 
 struct AdjointLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
-    A::AbstractLinearOperator{T,ND,NR}
+    A::AbstractLinearOperator{T,NR,ND}
 end
 
 domain_size(A::AdjointLinearOperator) = range_size(A.A)
@@ -70,4 +70,4 @@ range_size(A::AdjointLinearOperator) = domain_size(A.A)
 matvecprod(A::AdjointLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = matvecprod_adj(A.A, u)
 matvecprod_adj(A::AdjointLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod(A.A, v)
 
-adjoint(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,ND,NR}(A)
+adjoint(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,NR,ND}(A)

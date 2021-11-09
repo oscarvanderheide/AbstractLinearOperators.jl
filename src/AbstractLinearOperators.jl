@@ -12,4 +12,7 @@ include("./concrete_type.jl")
 # Algebra
 include("./linear_algebra.jl")
 
+# Examples
+include("./examples.jl")
+
 end
