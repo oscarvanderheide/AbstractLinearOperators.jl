@@ -56,20 +56,20 @@ Flux.cpu(A::MinusLinearOperator{T,ND,NR}) where {T,ND,NR} = MinusLinearOperator{
 
 ## MultLinearOperators: A*B
 
-struct MultLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
-    A::AbstractLinearOperator{T,ND,NR}
-    B::AbstractLinearOperator{T,ND,NR}
+struct MultLinearOperator{T,ND,Nh,NR}<:AbstractLinearOperator{T,ND,NR}
+    A::AbstractLinearOperator{T,Nh,NR}
+    B::AbstractLinearOperator{T,ND,Nh}
 end
 
 domain_size(A::MultLinearOperator) = domain_size(A.B)
 range_size(A::MultLinearOperator) = range_size(A.A)
-matvecprod(A::MultLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = matvecprod(A.A, matvecprod(A.B, u))
-matvecprod_adj(A::MultLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod_adj(A.B, matvecprod_adj(A.A, v))
+matvecprod(A::MultLinearOperator{T,ND,Nh,NR}, u::AbstractArray{T,ND}) where {T,ND,Nh,NR} = matvecprod(A.A, matvecprod(A.B, u))
+matvecprod_adj(A::MultLinearOperator{T,ND,Nh,NR}, v::AbstractArray{T,NR}) where {T,ND,Nh,NR} = matvecprod_adj(A.B, matvecprod_adj(A.A, v))
 
-*(A::AbstractLinearOperator{T,ND,NR}, B::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(A, B)
+*(A::AbstractLinearOperator{T,Nh,NR}, B::AbstractLinearOperator{T,ND,Nh}) where {T,ND,Nh,NR} = MultLinearOperator{T,ND,Nh,NR}(A, B)
 
-Flux.gpu(A::MultLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(gpu(A.A), gpu(A.B))
-Flux.cpu(A::MultLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(cpu(A.A), cpu(A.B))
+Flux.gpu(A::MultLinearOperator{T,ND,Nh,NR}) where {T,ND,Nh,NR} = MultLinearOperator{T,ND,Nh,NR}(gpu(A.A), gpu(A.B))
+Flux.cpu(A::MultLinearOperator{T,ND,Nh,NR}) where {T,ND,Nh,NR} = MultLinearOperator{T,ND,Nh,NR}(cpu(A.A), cpu(A.B))
 
 ## AdjointLinearOperators: adjoint(A)
 
