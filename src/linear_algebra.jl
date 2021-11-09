@@ -17,6 +17,9 @@ matvecprod_adj(A::ScaledLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {
 
 *(c::T, A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(c, A)
 
+Flux.gpu(A::ScaledLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(A.c, gpu(A.A))
+Flux.cpu(A::ScaledLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(A.c, cpu(A.A))
+
 ## PlusLinearOperators: A+B
 
 struct PlusLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
@@ -30,6 +33,9 @@ matvecprod(A::PlusLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,N
 matvecprod_adj(A::PlusLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod_adj(A.A, v)+matvecprod_adj(A.B, v)
 
 +(A::AbstractLinearOperator{T,ND,NR}, B::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = PlusLinearOperator{T,ND,NR}(A, B)
+
+Flux.gpu(A::PlusLinearOperator{T,ND,NR}) where {T,ND,NR} = PlusLinearOperator{T,ND,NR}(gpu(A.A), gpu(A.B))
+Flux.cpu(A::PlusLinearOperator{T,ND,NR}) where {T,ND,NR} = PlusLinearOperator{T,ND,NR}(cpu(A.A), cpu(A.B))
 
 ## MinusLinearOperators: A-B
 
@@ -45,6 +51,9 @@ matvecprod_adj(A::MinusLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T
 
 -(A::AbstractLinearOperator{T,ND,NR}, B::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = MinusLinearOperator{T,ND,NR}(A, B)
 
+Flux.gpu(A::MinusLinearOperator{T,ND,NR}) where {T,ND,NR} = MinusLinearOperator{T,ND,NR}(gpu(A.A), gpu(A.B))
+Flux.cpu(A::MinusLinearOperator{T,ND,NR}) where {T,ND,NR} = MinusLinearOperator{T,ND,NR}(cpu(A.A), cpu(A.B))
+
 ## MultLinearOperators: A*B
 
 struct MultLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
@@ -59,6 +68,9 @@ matvecprod_adj(A::MultLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,
 
 *(A::AbstractLinearOperator{T,ND,NR}, B::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(A, B)
 
+Flux.gpu(A::MultLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(gpu(A.A), gpu(A.B))
+Flux.cpu(A::MultLinearOperator{T,ND,NR}) where {T,ND,NR} = MultLinearOperator{T,ND,NR}(cpu(A.A), cpu(A.B))
+
 ## AdjointLinearOperators: adjoint(A)
 
 struct AdjointLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
@@ -71,3 +83,6 @@ matvecprod(A::AdjointLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,N
 matvecprod_adj(A::AdjointLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod(A.A, v)
 
 adjoint(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,NR,ND}(A)
+
+Flux.gpu(A::AdjointLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,ND,NR}(gpu(A.A))
+Flux.cpu(A::AdjointLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,ND,NR}(cpu(A.A))
