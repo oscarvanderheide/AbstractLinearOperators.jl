@@ -7,7 +7,7 @@ export domain_size, range_size
 
 # Generic linear operator
 
-struct LinearOperator<:AbstractLinearOperator
+struct LinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
     domain_size::NTuple{<:Any,Int64}
     range_size::NTuple{<:Any,Int64}
     matvecprod::Function
@@ -16,21 +16,21 @@ end
 
 domain_size(L::LinearOperator) = L.domain_size
 range_size(L::LinearOperator) = L.range_size
-matvecprod(L::LinearOperator, u::AbstractArray) = L.matvecprod(u)
-matvecprod_adj(L::LinearOperator, v::AbstractArray) = L.matvecprod_adj(v)
+matvecprod(L::LinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = L.matvecprod(u)
+matvecprod_adj(L::LinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = L.matvecprod_adj(v)
 
-linear_operator(domain_size::NTuple{N1,Int64}, range_size::NTuple{N2,Int64}, matvecprod::Function, matvecprod_adj::Function) where {N1,N2} = LinearOperator(domain_size, range_size, matvecprod, matvecprod_adj)
+linear_operator(T::DataType, domain_size::NTuple{ND,Int64}, range_size::NTuple{NR,Int64}, matvecprod::Function, matvecprod_adj::Function) where {ND,NR} = LinearOperator{T,ND,NR}(domain_size, range_size, matvecprod, matvecprod_adj)
 
 
 # Identity
 
-struct IdentityOperator<:AbstractLinearOperator
+struct IdentityOperator{T,N}<:AbstractLinearOperator{T,N,N}
     size::NTuple{<:Any,Int64}
 end
 
 domain_size(I::IdentityOperator) = I.size
 range_size(I::IdentityOperator) = I.size
-matvecprod(::IdentityOperator, u::AbstractArray) = u
-matvecprod_adj(::IdentityOperator, v::AbstractArray) = v
+matvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
+matvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 
-identity_operator(DT::DataType, size::NTuple{N,Int64}) where N = IdentityOperator(size)
+identity_operator(T::DataType, size::NTuple{N,Int64}) where N = IdentityOperator{T,N}(size)
