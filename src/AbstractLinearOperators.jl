@@ -2,8 +2,8 @@ module AbstractLinearOperators
 
 # Modules
 using LinearAlgebra, Flux
-import Base: size, show, eltype, +, -, *, /
-import LinearAlgebra: adjoint
+import Base: size, show, eltype, +, -, *, /, \
+import LinearAlgebra: adjoint, inv
 
 # Abstract type
 include("./abstract_type.jl")

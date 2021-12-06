@@ -12,6 +12,8 @@ domain_size(I::IdentityOperator) = I.size
 range_size(I::IdentityOperator) = I.size
 matvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
 matvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
+invmatvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
+invmatvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 
 identity_operator(T::DataType, size::NTuple{N,Int64}) where N = IdentityOperator{T,N}(size)
 

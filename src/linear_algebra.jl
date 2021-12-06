@@ -86,3 +86,21 @@ adjoint(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOpera
 
 Flux.gpu(A::AdjointLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,ND,NR}(gpu(A.A))
 Flux.cpu(A::AdjointLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,ND,NR}(cpu(A.A))
+
+## InverseLinearOperators: inv(A)
+
+struct InverseLinearOperator{T,ND,NR}<:AbstractLinearOperator{T,ND,NR}
+    A::AbstractLinearOperator{T,NR,ND}
+end
+
+domain_size(Ainv::InverseLinearOperator) = range_size(Ainv.A)
+range_size(Ainv::InverseLinearOperator) = domain_size(Ainv.A)
+matvecprod(Ainv::InverseLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = invmatvecprod(Ainv.A, u)
+matvecprod_adj(Ainv::InverseLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = invmatvecprod_adj(Ainv.A, v)
+invmatvecprod(Ainv::InverseLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod(Ainv.A, v)
+invmatvecprod_adj(Ainv::InverseLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = matvecprod_adj(Ainv.A, u)
+
+inv(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = InverseLinearOperator{T,NR,ND}(A)
+
+Flux.gpu(Ainv::InverseLinearOperator{T,ND,NR}) where {T,ND,NR} = InverseLinearOperator{T,ND,NR}(gpu(Ainv.A))
+Flux.cpu(Ainv::InverseLinearOperator{T,ND,NR}) where {T,ND,NR} = InverseLinearOperator{T,ND,NR}(cpu(Ainv.A))

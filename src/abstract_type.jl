@@ -22,6 +22,7 @@ show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
 # Algebra
 
 *(A::AbstractLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = matvecprod(A, u)
+\(A::AbstractLinearOperator{T,ND,NR}, u::AbstractArray{T,NR}) where {T,ND,NR} = invmatvecprod(A, u)
 
 
 # Utils
