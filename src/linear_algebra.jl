@@ -14,6 +14,8 @@ domain_size(A::ScaledLinearOperator) = domain_size(A.A)
 range_size(A::ScaledLinearOperator) = range_size(A.A)
 matvecprod(A::ScaledLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = A.c*(A.A*u)
 matvecprod_adj(A::ScaledLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = conj(A.c)*matvecprod_adj(A.A, v)
+invmatvecprod(A::ScaledLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = invmatvecprod(A.A, u)/A.c
+invmatvecprod_adj(A::ScaledLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = invmatvecprod_adj(A.A, v)/conj(A.c)
 
 *(c::T, A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(c, A)
 
@@ -65,6 +67,8 @@ domain_size(A::MultLinearOperator) = domain_size(A.B)
 range_size(A::MultLinearOperator) = range_size(A.A)
 matvecprod(A::MultLinearOperator{T,ND,Nh,NR}, u::AbstractArray{T,ND}) where {T,ND,Nh,NR} = matvecprod(A.A, matvecprod(A.B, u))
 matvecprod_adj(A::MultLinearOperator{T,ND,Nh,NR}, v::AbstractArray{T,NR}) where {T,ND,Nh,NR} = matvecprod_adj(A.B, matvecprod_adj(A.A, v))
+invmatvecprod(A::MultLinearOperator{T,ND,Nh,NR}, u::AbstractArray{T,ND}) where {T,ND,Nh,NR} = invmatvecprod(A.B, invmatvecprod(A.A, u))
+invmatvecprod_adj(A::MultLinearOperator{T,ND,Nh,NR}, v::AbstractArray{T,NR}) where {T,ND,Nh,NR} = invmatvecprod_adj(A.A, invmatvecprod_adj(A.B, v))
 
 *(A::AbstractLinearOperator{T,Nh,NR}, B::AbstractLinearOperator{T,ND,Nh}) where {T,ND,Nh,NR} = MultLinearOperator{T,ND,Nh,NR}(A, B)
 
@@ -81,6 +85,8 @@ domain_size(A::AdjointLinearOperator) = range_size(A.A)
 range_size(A::AdjointLinearOperator) = domain_size(A.A)
 matvecprod(A::AdjointLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = matvecprod_adj(A.A, u)
 matvecprod_adj(A::AdjointLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = matvecprod(A.A, v)
+invmatvecprod(A::AdjointLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = invmatvecprod_adj(A.A, u)
+invmatvecprod_adj(A::AdjointLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = invmatvecprod(A.A, v)
 
 adjoint(A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = AdjointLinearOperator{T,NR,ND}(A)
 

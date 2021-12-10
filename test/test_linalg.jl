@@ -61,3 +61,13 @@ v = randn(Float32, rsize)
 @test v ≈ Ainv\(A\v) rtol=1f-3
 @test u ≈ A\(Ainv\u) rtol=1f-3
 @test dot(Ainv*u, v) ≈ dot(u, adjoint(Ainv)*v) rtol=1f-3
+
+α = randn(Float32)
+C = α*A; Cinv = inv(C)
+@test C\u ≈ A\u/α rtol=1f-3
+@test C\u ≈ Cinv*u rtol=1f-3
+
+B = CustomType{4,4}(dsize, rsize, randn(Float32,100,100))
+C = A*B; Cinv = inv(C)
+@test C\u ≈ B\(A\u) rtol=1f-3
+@test C\u ≈ Cinv*u rtol=1f-3
