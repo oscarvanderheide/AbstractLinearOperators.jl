@@ -17,7 +17,7 @@ matvecprod_adj(A::ScaledLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {
 invmatvecprod(A::ScaledLinearOperator{T,ND,NR}, u::AbstractArray{T,ND}) where {T,ND,NR} = invmatvecprod(A.A, u)/A.c
 invmatvecprod_adj(A::ScaledLinearOperator{T,ND,NR}, v::AbstractArray{T,NR}) where {T,ND,NR} = invmatvecprod_adj(A.A, v)/conj(A.c)
 
-*(c::T, A::AbstractLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(c, A)
+*(c::T, A::AbstractLinearOperator{CT,ND,NR}) where {T<:Real,ND,NR,CT<:RealOrComplex{T}} = ScaledLinearOperator{CT,ND,NR}(c, A)
 
 Flux.gpu(A::ScaledLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(A.c, gpu(A.A))
 Flux.cpu(A::ScaledLinearOperator{T,ND,NR}) where {T,ND,NR} = ScaledLinearOperator{T,ND,NR}(A.c, cpu(A.A))
