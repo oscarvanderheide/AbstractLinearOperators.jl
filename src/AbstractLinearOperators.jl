@@ -1,7 +1,7 @@
 module AbstractLinearOperators
 
 # Modules
-using LinearAlgebra, Flux
+using LinearAlgebra#, Flux
 import Base: size, show, eltype, +, -, *, /, \
 import LinearAlgebra: adjoint, inv
 
