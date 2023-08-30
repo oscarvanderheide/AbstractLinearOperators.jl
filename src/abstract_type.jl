@@ -14,6 +14,8 @@ abstract type AbstractLinearOperator{T,ND,NR} end
 
 # Base functions
 
+domain_size(::AbstractLinearOperator) = "?"
+range_size(::AbstractLinearOperator) = "?"
 size(A::AbstractLinearOperator) = (range_size(A), domain_size(A))
 show(::IO, A::AbstractLinearOperator) = info(A)
 show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
