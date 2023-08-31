@@ -11,7 +11,8 @@ include("./concrete_type.jl")
 include("./linear_algebra.jl")
 
 # Basic examples
-include("./basic_linear_operators.jl")
+include("./linear_operators/basic_linear_operators.jl")
+include("./linear_operators/padding_operators.jl")
 
 # Test
 include("./test_utils.jl")

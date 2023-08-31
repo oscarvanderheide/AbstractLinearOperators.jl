@@ -1,7 +1,6 @@
 export IdentityOperator, identity_operator,
        ReshapeOperator, reshape_operator,
-       Real2ComplexOperator, real2complex_operator, Complex2RealOperator, complex2real_operator,
-       AbstractPaddingOperator, ZeroPaddingOperator, zero_padding_operator
+       Real2ComplexOperator, real2complex_operator, Complex2RealOperator, complex2real_operator
 
 
 # Identity
@@ -62,36 +61,3 @@ range_size(A::Complex2RealOperator) = A.size
 label(::Complex2RealOperator) = "Real"
 matvecprod(::Complex2RealOperator{T,N}, u::AbstractArray{Complex{T},N}) where {T,N} = real(u)
 matvecprod_adj(::Complex2RealOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = complex(v)
-
-
-# Padding operators
-
-abstract type AbstractPaddingOperator{T,N}<:AbstractLinearOperator{T,N,T,N} end
-
-struct ZeroPaddingOperator{T,N}<:AbstractPaddingOperator{T,N}
-    size::NTuple{N,Integer}
-    padding::NTuple{N, NTuple{2,Integer}}
-    extended_size::NTuple{N,Integer}
-    center_view
-end
-
-function zero_padding_operator(T::DataType, size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N
-    ext_size = extended_size(size, padding)
-    cv = center_view(ext_size, padding)
-    return ZeroPaddingOperator{T,N}(size, padding, ext_size, cv)
-end
-
-domain_size(P::ZeroPaddingOperator) = P.size
-range_size(P::ZeroPaddingOperator) = P.extended_size
-label(::AbstractPaddingOperator) = "Padding"
-
-function matvecprod(P::ZeroPaddingOperator{T,N}, u::AbstractArray{T,N}) where {T,N}
-    u_ext = zeros(T, P.extended_size)
-    view(u_ext, P.center_view...) .= u
-    return u_ext
-end
-
-matvecprod_adj(P::ZeroPaddingOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v[P.center_view...]
-
-extended_size(size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = size.+sum.(padding)
-center_view(ext_size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = Tuple([padding[i][1]+1:ext_size[i]-padding[i][2] for i = 1:N])

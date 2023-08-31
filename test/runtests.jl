@@ -5,4 +5,6 @@ using AbstractLinearOperators, Test
     include("./test_identity.jl")
     include("./test_reshape.jl")
     include("./test_real2complex.jl")
+    include("./test_zero_padding.jl")
+    include("./test_repeat_padding.jl")
 end
