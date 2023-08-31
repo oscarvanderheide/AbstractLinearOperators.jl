@@ -1,12 +1,16 @@
-using LinearAlgebra, Test, AbstractLinearOperators
+using AbstractLinearOperators, Test
 
-# Random init
-input_size = (101, 200)
-output_size = (101, 2, 100)
-T = ComplexF32
+# Linear operator
+input_size = (2^7, 2^8)
+output_size = (2^7, 2, 2^7)
+T = Float64
 A = reshape_operator(T, input_size, output_size)
-u = randn(T, input_size)
-v = randn(T, output_size)
 
-# Adjoint
-@test dot(A*u, v) ≈ dot(u, adjoint(A)*v) rtol=1f-6
+# Reshape test
+rtol = 1e-6
+u = randn(T, input_size)
+@test A*u ≈ reshape(u, output_size) rtol=rtol
+
+# Adjoint test
+rtol = 1e-6
+@test adjoint_test(A; rtol=rtol)

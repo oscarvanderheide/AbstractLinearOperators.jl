@@ -1,3 +1,3 @@
 # AbstractLinearOperators
 
-Abstraction of linear operators and related linear algebra, +/-/* etc.
+Lightweight package for lazy linear algebra!
