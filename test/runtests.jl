@@ -1,4 +1,4 @@
-using AbstractLinearOperators, Test
+using AbstractLinearOperators, CUDA, cuDNN, Test
 
 @testset "AbstractLinearOperators.jl" begin
     include("./test_linalg.jl")
@@ -7,4 +7,5 @@ using AbstractLinearOperators, Test
     include("./test_real2complex.jl")
     include("./test_zero_padding.jl")
     include("./test_repeat_padding.jl")
+    include("./test_convolution.jl")
 end
