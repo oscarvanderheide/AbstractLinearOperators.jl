@@ -49,35 +49,29 @@ end
 domain_size(P::RepeatPaddingOperator) = P.size
 range_size(P::RepeatPaddingOperator) = P.extended_size
 
-function matvecprod(P::RepeatPaddingOperator{T,2}, u::AbstractArray{T,2}) where T
+function matvecprod(P::RepeatPaddingOperator{T,N}, u::AbstractArray{T,N}) where {T,N}
 
     u_ext = similar(u, P.extended_size)
     view(u_ext, P.center_view...) .= u
-    u_ext[1:P.padding[1][1], P.padding[2][1]+1:end-P.padding[2][2]] .= u_ext[P.padding[1][1]+1:P.padding[1][1]+1, P.padding[2][1]+1:end-P.padding[2][2]]
-    u_ext[end-P.padding[1][2]+1:end, P.padding[2][1]+1:end-P.padding[2][2]] .= u_ext[end-P.padding[1][2]:end-P.padding[1][2], P.padding[2][1]+1:end-P.padding[2][2]]
-    u_ext[:, 1:P.padding[2][1]] .= u_ext[:, P.padding[2][1]+1:P.padding[2][1]+1]
-    u_ext[:, end-P.padding[2][2]+1:end] .= u_ext[:, end-P.padding[2][2]:end-P.padding[2][2]]
+    @inbounds for i = 1:N
+        selectdim(u_ext, i, 1:P.padding[i][1]) .= selectdim(u_ext, i, P.padding[i][1]+1:P.padding[i][1]+1)
+        selectdim(u_ext, i, P.extended_size[i]-P.padding[i][2]+1:P.extended_size[i]) .= selectdim(u_ext, i, P.extended_size[i]-P.padding[i][2]:P.extended_size[i]-P.padding[i][2])
+    end
     return u_ext
 
 end
 
-function matvecprod_adj(P::RepeatPaddingOperator{T,2}, u_ext::AbstractArray{T,2}) where T
+function matvecprod_adj(P::RepeatPaddingOperator{T,N}, u_ext::AbstractArray{T,N}) where {T,N}
 
     padding = P.padding
-    u = copy(view(u_ext, P.center_view...))
-
-    u_ext_top = sum(view(u_ext, 1:padding[1][1], :); dims=1)
-    u[1:1, :] .+= [sum(u_ext_top[:, 1:padding[2][1]+1]; dims=2) u_ext_top[:, padding[2][1]+2:end-padding[2][2]-1] sum(u_ext_top[:, end-padding[2][2]:end]; dims=2)]
-
-    u_ext_bottom = sum(view(u_ext, P.extended_size[1]-padding[1][2]+1:P.extended_size[1], :); dims=1)
-    u[end:end, :] .+= [sum(u_ext_bottom[:, 1:padding[2][1]+1]; dims=2) u_ext_bottom[:, padding[2][1]+2:end-padding[2][2]-1] sum(u_ext_bottom[:, end-padding[2][2]:end]; dims=2)]
-
-    u_ext_left = sum(view(u_ext, padding[1][1]+1:P.extended_size[1]-padding[1][2], 1:padding[2][1]); dims=2)
-    u[:, 1:1] .+= u_ext_left
-
-    u_ext_right = sum(view(u_ext, padding[1][1]+1:P.extended_size[1]-padding[1][2], P.extended_size[2]-padding[2][2]+1:P.extended_size[2]); dims=2)
-    u[:, end:end] .+= u_ext_right
-
+    ext_size = P.extended_size
+    u = copy(u_ext)
+    @inbounds for i = 1:N
+        u = cat(sum(selectdim(u, i, 1:padding[i][1]+1); dims=i),
+                selectdim(u, i, padding[i][1]+2:ext_size[i]-padding[i][2]-1),
+                sum(selectdim(u, i, ext_size[i]-padding[i][2]:ext_size[i]); dims=i);
+                dims=i)
+    end
     return u
 
 end

@@ -7,10 +7,10 @@ T = Float64
 A = reshape_operator(T, input_size, output_size)
 
 # Reshape test
-rtol = 1e-6
+rtol = T(1e-6)
 u = randn(T, input_size)
 @test A*u ≈ reshape(u, output_size) rtol=rtol
 
 # Adjoint test
-rtol = 1e-6
+rtol = T(1e-6)
 @test adjoint_test(A; rtol=rtol)
