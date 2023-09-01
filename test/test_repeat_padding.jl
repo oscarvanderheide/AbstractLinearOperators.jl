@@ -4,7 +4,7 @@ using AbstractLinearOperators, Test
 input_size = (2^7, 2^8)
 padding = ((1, 2), (3, 4))
 T = Float64
-A = repeat_padding_operator(T, input_size, padding)
+A = repeat_padding_operator(T, padding)
 
 # Zero padding test
 rtol = T(1e-6)
@@ -14,4 +14,6 @@ Au = A*u
 
 # Adjoint test
 rtol = T(1e-6)
-@test adjoint_test(A; rtol=rtol)
+u = randn(T, input_size)
+v = randn(T, extended_size(input_size, padding))
+@test adjoint_test(A; input=u, output=v, rtol=rtol)
