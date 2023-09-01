@@ -23,8 +23,8 @@ end
 using .ModuleCustomType
 
 # Precision
-T = Float32
-rtol = T(1e-3)
+T = Float64
+rtol = T(1e-6)
 
 # Random init
 dsize = (2, 3, 4, 5)

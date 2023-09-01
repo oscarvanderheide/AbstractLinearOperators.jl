@@ -3,9 +3,10 @@ CUDA.allowscalar(false)
 
 # Linear operator
 T = Float64
-input_size = (2^7, 2^8)
-stencil = randn(T, 3, 2)
-C = convolution_operator(stencil)
+input_size = (2^7, 2^8, 2^7)
+stencil = randn(T, 3, 2, 1)
+padding = ((1,2),(3,0),(4,4))
+C = convolution_operator(stencil; padding=padding)
 u = randn(T, input_size); C*u # initialize
 
 # Adjoint test
@@ -13,8 +14,8 @@ rtol = T(1e-6)
 @test adjoint_test(C; rtol=rtol)
 
 # Linear operator
-stencil = CUDA.randn(T, 3, 2)
-C = convolution_operator(stencil)
+stencil = CUDA.randn(T, 3, 2, 1)
+C = convolution_operator(stencil; padding=padding)
 u = CUDA.randn(T, input_size)
 output_size = size(C*u) # initialize
 
