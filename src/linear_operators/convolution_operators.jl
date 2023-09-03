@@ -6,7 +6,7 @@ mutable struct ConvolutionOperator{T,N}<:AbstractLinearOperator{T,N,T,N}
     padding
 end
 
-convolution_operator(stencil::AbstractArray{T,N}; padding::Union{Nothing,NTuple{N,NTuple{2,Integer}}}=nothing) where {T,N} = ConvolutionOperator{T,N}(reverse(stencil), nothing, isnothing(padding) ? tuple(zeros(Integer, 2*N)...) : flatten(padding))
+convolution_operator(stencil::AbstractArray{T,N}; padding::Union{Nothing,NTuple{N,NTuple{2,Integer}}}=nothing) where {T,N} = ConvolutionOperator{T,N}(stencil, nothing, isnothing(padding) ? tuple(zeros(Integer, 2*N)...) : flatten(padding))
 
 AbstractLinearOperators.domain_size(C::ConvolutionOperator) = is_init(C) ? NNlib.input_size(C.cdims) : nothing
 AbstractLinearOperators.range_size(C::ConvolutionOperator) = is_init(C) ? NNlib.output_size(C.cdims) : nothing
