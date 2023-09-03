@@ -13,7 +13,10 @@ AbstractLinearOperators.range_size(C::ConvolutionOperator) = is_init(C) ? NNlib.
 AbstractLinearOperators.label(::ConvolutionOperator) = "Conv"
 
 function AbstractLinearOperators.matvecprod(C::ConvolutionOperator{T,N}, u::AbstractArray{T,N}) where {T,N}
-    ~is_init(C) && (C.cdims = DenseConvDims(reshape_conv(u), reshape_conv(C.stencil); padding=C.padding))
+    if ~is_init(C)
+        C.stencil = convert(typeof(u), C.stencil)
+        C.cdims = DenseConvDims(reshape_conv(u), reshape_conv(C.stencil); padding=C.padding)
+    end
     return dropdims(conv(reshape_conv(u), reshape_conv(C.stencil); pad=C.padding); dims=(N+1,N+2))
 end
 AbstractLinearOperators.matvecprod_adj(C::ConvolutionOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = dropdims(∇conv_data(reshape_conv(v), reshape_conv(C.stencil), C.cdims); dims=(N+1,N+2))

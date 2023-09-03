@@ -14,7 +14,7 @@ rtol = T(1e-6)
 @test adjoint_test(C; rtol=rtol)
 
 # Linear operator
-stencil = CUDA.randn(T, 3, 2, 1)
+stencil = randn(T, 3, 2, 1)
 C = convolution_operator(stencil; padding=padding)
 u = CUDA.randn(T, input_size)
 output_size = size(C*u) # initialize
