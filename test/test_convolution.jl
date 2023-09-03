@@ -1,4 +1,4 @@
-using AbstractLinearOperators, CUDA, cuDNN, Test
+using AbstractLinearOperators, CUDA, Test
 CUDA.allowscalar(false)
 
 # Linear operator
