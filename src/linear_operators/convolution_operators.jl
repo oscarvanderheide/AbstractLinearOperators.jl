@@ -1,26 +1,36 @@
 export ConvolutionOperator, convolution_operator
 
-mutable struct ConvolutionOperator{T,N}<:AbstractLinearOperator{T,N,T,N}
-    stencil::AbstractArray{T,N}
+
+# Convolution operator (batched version)
+
+mutable struct ConvolutionOperator{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb}
+    stencil::AbstractArray{T,Nb}
+    padding::NTuple{N,NTuple{2,Integer}}
     cdims::Union{Nothing,DenseConvDims}
-    padding
+    batch_size::Union{Nothing,Integer}
 end
 
-convolution_operator(stencil::AbstractArray{T,N}; padding::Union{Nothing,NTuple{N,NTuple{2,Integer}}}=nothing) where {T,N} = ConvolutionOperator{T,N}(stencil, nothing, isnothing(padding) ? tuple(zeros(Integer, 2*N)...) : flatten(padding))
+function convolution_operator(stencil::AbstractArray{T,Nb}, padding::Union{Nothing,NTuple{N,NTuple{2,Integer}}}) where {T,N,Nb}
+    isnothing(padding) && (padding = Tuple([(0, 0) for i = 1:Nb-2])); Nx = length(padding)
+    (Nb !== Nx+2) && throw(ArgumentError("Stencil and padding dimensions are not consistent!"))
+    return ConvolutionOperator{T,Nx,Nb}(stencil, padding, nothing, nothing)
+end
 
-AbstractLinearOperators.domain_size(C::ConvolutionOperator) = is_init(C) ? NNlib.input_size(C.cdims) : nothing
-AbstractLinearOperators.range_size(C::ConvolutionOperator) = is_init(C) ? NNlib.output_size(C.cdims) : nothing
+AbstractLinearOperators.domain_size(C::ConvolutionOperator) = is_init(C) ? Tuple([NNlib.input_size(C.cdims)..., NNlib.channels_in(C.cdims), C.batch_size]) : nothing
+AbstractLinearOperators.range_size(C::ConvolutionOperator) = is_init(C) ? Tuple([NNlib.output_size(C.cdims)..., NNlib.channels_out(C.cdims), C.batch_size]) : nothing
 AbstractLinearOperators.label(::ConvolutionOperator) = "Conv"
 
-function AbstractLinearOperators.matvecprod(C::ConvolutionOperator{T,N}, u::AbstractArray{T,N}) where {T,N}
+"""
+Size of input is WHCN (width, height(, depth), channel, batch)
+"""
+function AbstractLinearOperators.matvecprod(C::ConvolutionOperator{T,N,Nb}, u::AbstractArray{T,Nb}) where {T,N,Nb}
     if ~is_init(C)
         C.stencil = convert(typeof(u), C.stencil)
-        C.cdims = DenseConvDims(reshape_conv(u), reshape_conv(C.stencil); padding=C.padding)
+        C.cdims = DenseConvDims(size(u), size(C.stencil); padding=collect(Iterators.flatten(C.padding)))
+        C.batch_size = size(u, Nb)
     end
-    return dropdims(conv(reshape_conv(u), reshape_conv(C.stencil); pad=C.padding); dims=(N+1,N+2))
+    return conv(u, C.stencil, C.cdims)
 end
-AbstractLinearOperators.matvecprod_adj(C::ConvolutionOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = dropdims(∇conv_data(reshape_conv(v), reshape_conv(C.stencil), C.cdims); dims=(N+1,N+2))
+AbstractLinearOperators.matvecprod_adj(C::ConvolutionOperator{T,N,Nb}, v::AbstractArray{T,Nb}) where {T,N,Nb} = ∇conv_data(v, C.stencil, C.cdims)
 
 is_init(C::ConvolutionOperator) = ~isnothing(C.cdims)
-reshape_conv(u::AbstractArray) = reshape(u, size(u)..., 1, 1)
-flatten(padding::NTuple{N,NTuple{2,Integer}}) where N = Tuple(collect(Iterators.flatten(padding)))

@@ -1,9 +1,6 @@
 #: Concrete type
 
-export LinearOperator, linear_operator,
-       domain_size, range_size,
-       label,
-       matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj
+export LinearOperator, linear_operator
 
 struct LinearOperator{TD,ND,TR,NR}<:AbstractLinearOperator{TD,ND,TR,NR}
     domain_size::NTuple{ND,Integer}

@@ -1,5 +1,9 @@
 #: Abstract types
-export AbstractLinearOperator
+export AbstractLinearOperator,
+       domain_size, range_size,
+       label,
+       matvecprod!, matvecprod_adj!, invmatvecprod!, invmatvecprod_adj!,
+       matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj
 
 abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 
@@ -9,9 +13,10 @@ abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 domain_size(::AbstractLinearOperator) = nothing
 range_size(::AbstractLinearOperator) = nothing
 label(::AbstractLinearOperator) = nothing
-Base.size(A::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = ((TR, range_size(A)...), (TD, domain_size(A)...))
-Base.show(::IO, A::AbstractLinearOperator) = info(A)
-Base.show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
+matvecprod(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = matvecprod!(similar(u, range_size(A)), A, u)
+matvecprod_adj(A::AbstractLinearOperator{TD,ND,TR,NR}, v::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = matvecprod_adj!(similar(v, domain_size(A)), A, v)
+invmatvecprod(A::AbstractLinearOperator{TD,ND,TR,NR}, v::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = invmatvecprod!(similar(v, range_size(A)), A, v)
+invmatvecprod_adj(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = invmatvecprod_adj!(similar(u, domain_size(A)), A, u)
 
 
 # Algebra
@@ -20,6 +25,13 @@ Base.:*(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TD,ND}) where {
 Base.:\(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = invmatvecprod(A, u)
 
 
-# Utils
+# Display behaviour
 
+Base.show(::IO, A::AbstractLinearOperator) = info(A)
+Base.show(::IO, mime::MIME"text/plain", A::AbstractLinearOperator) = info(A)
 info(A::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = print("Linear operator, domain ≅ ", TD, "^", domain_size(A), ", range ≅ ", TR, "^", range_size(A), ~isnothing(label(A)) ? string(", label=", label(A)) : "")
+
+
+# Other utils
+
+Base.size(A::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = ((TR, range_size(A)...), (TD, domain_size(A)...))
