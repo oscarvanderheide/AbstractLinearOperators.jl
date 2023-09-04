@@ -8,6 +8,9 @@ export AbstractPaddingOperator,
 
 abstract type AbstractPaddingOperator{T,N}<:AbstractLinearOperator{T,N,T,N} end
 
+
+## Zero padding
+
 struct ZeroPaddingOperator{T,N}<:AbstractPaddingOperator{T,N}
     padding::NTuple{N, NTuple{2,Integer}}
 end
@@ -32,6 +35,9 @@ end
 
 extended_size(size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = size.+sum.(padding)
 center_view(ext_size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = Tuple([padding[i][1]+1:ext_size[i]-padding[i][2] for i = 1:N])
+
+
+## Repeat padding
 
 struct RepeatPaddingOperator{T,N}<:AbstractPaddingOperator{T,N}
     padding::NTuple{N, NTuple{2,Integer}}
@@ -60,11 +66,12 @@ function matvecprod_adj(P::RepeatPaddingOperator{T,N}, u_ext::AbstractArray{T,N}
     ext_size = size(u_ext)
     u = copy(u_ext)
     @inbounds for i = 1:N
-        u = cat(sum(selectdim(u, i, 1:padding[i][1]+1); dims=i),
-                selectdim(u, i, padding[i][1]+2:ext_size[i]-padding[i][2]-1),
-                sum(selectdim(u, i, ext_size[i]-padding[i][2]:ext_size[i]); dims=i);
-                dims=i)
+        u_top = sum(selectdim(u, i, 1:padding[i][1]); dims=i)
+        u_bottom = sum(selectdim(u, i, ext_size[i]-padding[i][2]+1:ext_size[i]); dims=i)
+        u = selectdim(u, i, padding[i][1]+1:ext_size[i]-padding[i][2])
+        selectdim(u, i, 1:1) .+= u_top
+        selectdim(u, i, size(u, i):size(u, i)) .+= u_bottom
     end
-    return u
+    return copy(u)
 
 end

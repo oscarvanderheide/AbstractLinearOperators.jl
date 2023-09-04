@@ -6,7 +6,7 @@ padding = ((1, 2), (3, 4))
 T = Float64
 A = repeat_padding_operator(T, padding)
 
-# Zero padding test
+# Repeat padding test
 rtol = T(1e-6)
 u = randn(T, input_size)
 Au = A*u
