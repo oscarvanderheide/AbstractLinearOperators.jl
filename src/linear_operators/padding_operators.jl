@@ -36,6 +36,13 @@ end
 extended_size(size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = size.+sum.(padding)
 center_view(ext_size::NTuple{N,Integer}, padding::NTuple{N, NTuple{2,Integer}}) where N = Tuple([padding[i][1]+1:ext_size[i]-padding[i][2] for i = 1:N])
 
+function to_full_matrix(P::ZeroPaddingOperator{T,N}, input_size::NTuple{N,Integer}) where {T,N}
+    ext_size = extended_size(input_size, P.padding)
+    cview = center_view(ext_size, P.padding)
+    I = vec(LinearIndices(ext_size)[CartesianIndices(cview)])
+    return sparse(I, 1:prod(input_size), ones(T, length(I)), prod(ext_size), prod(input_size))
+end
+
 
 ## Repeat padding
 

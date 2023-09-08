@@ -21,3 +21,8 @@ rtol = T(1e-6)
 u = randn(T, input_size)
 v = randn(T, extended_size(input_size, padding))
 @test adjoint_test(A; input=u, output=v, rtol=rtol)
+
+# Full-matrix coherence
+u = randn(T, input_size)
+Am = to_full_matrix(A, input_size)
+@test vec(A*u) ≈ Am*vec(u) rtol=rtol

@@ -1,7 +1,7 @@
 module AbstractLinearOperators
 
 # Modules
-using LinearAlgebra, NNlib
+using LinearAlgebra, SparseArrays, NNlib
 
 # Abstract type
 include("./abstract_type.jl")

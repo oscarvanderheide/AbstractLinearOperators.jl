@@ -3,7 +3,7 @@ CUDA.allowscalar(false)
 
 T = Float64
 input_size = 2^6
-st_size = 2^3
+st_size = 3
 nc_in = 2
 nc_out = 3
 nb = 4
@@ -21,6 +21,10 @@ for N = 1:3
     output_size = size(C*u) # initialize
     v = randn(T, output_size)
     @test adjoint_test(C; input=u, output=v, rtol=rtol)
+
+    # Full-matrix coherence
+    Cm = to_full_matrix(C)
+    @test reshape(C*u, :, nb) ≈ Cm*reshape(u, :, nb) rtol=rtol
 
     # Linear operator
     C = convolution_operator(stencil, padding)

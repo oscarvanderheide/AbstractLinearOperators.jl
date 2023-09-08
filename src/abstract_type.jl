@@ -3,7 +3,8 @@ export AbstractLinearOperator,
        domain_size, range_size,
        label,
        matvecprod!, matvecprod_adj!, invmatvecprod!, invmatvecprod_adj!,
-       matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj
+       matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj,
+       to_full_matrix
 
 abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 
