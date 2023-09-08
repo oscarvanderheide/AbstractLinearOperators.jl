@@ -8,4 +8,5 @@ using AbstractLinearOperators, CUDA, cuDNN, Test
     include("./test_zero_padding.jl")
     include("./test_repeat_padding.jl")
     include("./test_convolution.jl")
+    include("./test_gradient.jl")
 end

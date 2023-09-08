@@ -14,6 +14,7 @@ include("./linear_algebra.jl")
 include("./linear_operators/basic_linear_operators.jl")
 include("./linear_operators/padding_operators.jl")
 include("./linear_operators/convolution_operators.jl")
+include("./linear_operators/gradient_operator.jl")
 
 # Test
 include("./test_utils.jl")
