@@ -54,7 +54,7 @@ function to_full_matrix(C::ConvolutionOperator{T,N,Nb}) where {T,N,Nb}
     ssize = size(w)[1:N]
     scenter = Tuple(ones(Integer, N))
     ncprod = cumprod((1, padded_size[1:end-1]...))
-    diag_pos = similar(w, Integer, ssize)
+    diag_pos = similar(w, Int, ssize)
     for cidx = CartesianIndices(ssize)
         diag_pos[cidx] = sum((Tuple(cidx).-scenter).*ncprod)
     end
