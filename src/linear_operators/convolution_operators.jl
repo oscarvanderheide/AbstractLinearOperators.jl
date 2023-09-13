@@ -50,7 +50,7 @@ function to_full_matrix(C::ConvolutionOperator{T,N,Nb}) where {T,N,Nb}
     padded_size = extended_size(n_in, C.padding)
 
     # Setting diagonal positions
-    w = reverse(C.stencil; dims=Tuple(1:N))
+    w = Array(reverse(C.stencil; dims=Tuple(1:N)))
     ssize = size(w)[1:N]
     scenter = Tuple(ones(Integer, N))
     ncprod = cumprod((1, padded_size[1:end-1]...))
