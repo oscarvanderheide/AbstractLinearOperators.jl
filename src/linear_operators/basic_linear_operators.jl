@@ -19,6 +19,11 @@ matvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 invmatvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
 invmatvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 
+function to_full_matrix(Id::IdentityOperator{T,N}) where {T,N}
+    isnothing(Id.size) && throw(ArgumentError("Size must be specified for full matrix conversion"))
+    return spdiagm(0 => ones(T, prod(Id.size)))
+end
+
 
 # Reshaping operator
 
