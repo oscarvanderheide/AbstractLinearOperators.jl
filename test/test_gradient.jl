@@ -44,7 +44,7 @@ for N = [2, 3]
     # Coherence test
     sz = input_size*ones(Integer, N)
     u = randn(T, Tuple(sz)..., 1, nb); output_size = size(∇*u)
-    ∇m = to_full_matrix(∇)
-    @test ∇m*reshape(u, :, nb) ≈ reshape(∇*u, :, nb) rtol=rtol
+    ∇mat = to_full_matrix(∇)
+    @test ∇mat*reshape(u, :, nb) ≈ reshape(∇*u, :, nb) rtol=rtol
 
 end

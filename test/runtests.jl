@@ -9,6 +9,6 @@ using AbstractLinearOperators, CUDA, cuDNN, Test
     include("./test_repeat_padding.jl")
     include("./test_convolution.jl")
     include("./test_gradient.jl")
-    include("./test_wavelet_reshape_2D.jl")
-    include("./test_Haar_transform_2D.jl")
+    include("./test_wavelet_reshape.jl")
+    include("./test_Haar_transform.jl")
 end

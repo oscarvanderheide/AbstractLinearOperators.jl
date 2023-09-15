@@ -13,8 +13,8 @@ for N = 1:3
 
     # Linear operator
     stencil = randn(T, st_size*ones(Integer, N)..., nc_in, nc_out)
-    padding = Tuple([(rand(0:st_size), rand(0:st_size)) for i = 1:N])
-    C = convolution_operator(stencil, padding)
+    padding = Tuple([rand(0:st_size) for i = 1:2*N])
+    C = convolution_operator(stencil; padding=padding)
 
     # Adjoint test
     u = randn(T, input_size*ones(Integer, N)..., nc_in, nb)
@@ -23,11 +23,11 @@ for N = 1:3
     @test adjoint_test(C; input=u, output=v, rtol=rtol)
 
     # Full-matrix coherence
-    Cm = to_full_matrix(C)
-    @test reshape(C*u, :, nb) ≈ Cm*reshape(u, :, nb) rtol=rtol
+    Cmat = to_full_matrix(C)
+    @test reshape(C*u, :, nb) ≈ Cmat*reshape(u, :, nb) rtol=rtol
 
     # Linear operator
-    C = convolution_operator(stencil, padding)
+    C = convolution_operator(stencil; padding=padding)
 
     # Adjoint test
     u = CUDA.randn(T, input_size*ones(Integer, N)..., nc_in, nb)
