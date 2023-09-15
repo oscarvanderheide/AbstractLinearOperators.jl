@@ -17,7 +17,7 @@ end
 
 convolution_operator(
     stencil::AbstractArray{T,Nb};
-    stride=1, padding=0, dilation=1, flipped::Bool=true, groups=1,
+    stride=1, padding=0, dilation=1, flipped::Bool=false, groups=1,
     cdims::Union{Nothing,DenseConvDims}=nothing) where {T,Nb} =
     ConvolutionOperator{T,Nb-2,Nb}(stencil, stride, padding, dilation, flipped, groups, cdims)
 
