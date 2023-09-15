@@ -1,9 +1,11 @@
-export ConvolutionOperator, convolution_operator
+export AbstractConvolutionOperator, ConvolutionOperator, convolution_operator
+
+abstract type AbstractConvolutionOperator{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb} end
 
 
 # Convolution operator
 
-mutable struct ConvolutionOperator{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb}
+mutable struct ConvolutionOperator{T,N,Nb}<:AbstractConvolutionOperator{T,N,Nb}
     stencil::AbstractArray{T,Nb}
     stride
     padding
