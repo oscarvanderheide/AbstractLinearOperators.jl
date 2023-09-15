@@ -43,15 +43,16 @@ AbstractLinearOperators.invmatvecprod_adj(R::WaveletReshape2D{T}, u::AbstractArr
 
 mutable struct HaarTransform2D{T}<:AbstractWaveletTransform{T,4,T,4}
     op::ConvolutionOperator{T,2,4}
-    R::WaveletReshape2D{T}
+    flatten::WaveletReshape2D{T}
+    n_levels::Union{Nothing,Integer}
     cdims_level
     idx_level
 end
 
-function Haar_transform_2D(T::DataType)
+function Haar_transform_2D(T::DataType; n_levels::Union{Nothing,Integer}=nothing)
     stencil = cat([ T(0.5)  T(0.5);  T(0.5) T(0.5)], [-T(0.5) -T(0.5);  T(0.5) T(0.5)],
                   [-T(0.5)  T(0.5); -T(0.5) T(0.5)], [ T(0.5) -T(0.5); -T(0.5) T(0.5)]; dims=4)
-    return HaarTransform2D{T}(convolution_operator(stencil; stride=2), wavelet_reshape_2D(T), nothing, nothing)
+    return HaarTransform2D{T}(convolution_operator(stencil; stride=2), wavelet_reshape_2D(T), n_levels, nothing, nothing)
 end
 
 AbstractLinearOperators.domain_size(W::HaarTransform2D) = ~is_init(W) ? nothing : input_dims(W.cdims_level[1])
@@ -62,8 +63,8 @@ function AbstractLinearOperators.matvecprod(W::HaarTransform2D{T}, u::AbstractAr
     ~is_init(W) && initialize!(W, u)
     Wu = copy(u)
     @inbounds for l = 1:n_levels(W)
-        set_cdims!(W.op, W.cdims_level[l]) 
-        Wu[W.idx_level[l]..., :, :] .= W.R*(W.op*Wu[W.idx_level[l]..., :, :])
+        set_cdims!(W.op, W.cdims_level[l])
+        Wu[W.idx_level[l]..., :, :] .= W.flatten*(W.op*Wu[W.idx_level[l]..., :, :])
     end
     return Wu
 end
@@ -71,8 +72,8 @@ end
 function AbstractLinearOperators.matvecprod_adj(W::HaarTransform2D{T}, v::AbstractArray{T,4}) where {T}
     WTv = copy(v)
     @inbounds for l = n_levels(W):-1:1
-        set_cdims!(W.op, W.cdims_level[l]) 
-        WTv[W.idx_level[l]..., :, :] .= W.op'*(W.R'*WTv[W.idx_level[l]..., :, :])
+        set_cdims!(W.op, W.cdims_level[l])
+        WTv[W.idx_level[l]..., :, :] .= W.op'*(W.flatten'*WTv[W.idx_level[l]..., :, :])
     end
     return WTv
 end
@@ -85,6 +86,11 @@ function initialize!(W::HaarTransform2D{T}, u::AbstractArray{T,4}) where {T}
     initialize!(W.op, u)
     nx, ny, _, nb = size(u)
     n_levels = _maxtransformlevels(u)
+    if isnothing(W.n_levels)
+        W.n_levels = n_levels
+    else
+        n_levels < W.n_levels ? (@warn "The number of transform levels specified exceeds the maximum. Resetting..."; W.n_levels = n_levels) : (n_levels = W.n_levels)
+    end
     cdims_level = Vector{DenseConvDims}(undef, n_levels)
     idx_level = Vector{NTuple{2,UnitRange{Int}}}(undef, n_levels)
     @inbounds for l = 1:n_levels
