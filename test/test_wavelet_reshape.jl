@@ -17,6 +17,9 @@ u = randn(T, input_size*ones(Integer, N)..., nc, nb)
 v = randn(T, 2*input_size*ones(Integer, N)..., div(nc,4), nb)
 @test adjoint_test(R; input=u, output=v, rtol=rtol)
 
+# Inverse test
+@test inverse_test(R; input=u, output=v, rtol=rtol)
+
 # Linear operator
 R = wavelet_reshape_2D(T)
 
@@ -24,3 +27,6 @@ R = wavelet_reshape_2D(T)
 u = CUDA.randn(T, input_size*ones(Integer, N)..., nc, nb)
 v = CUDA.randn(T, 2*input_size*ones(Integer, N)..., div(nc,4), nb)
 @test adjoint_test(R; input=u, output=v, rtol=rtol)
+
+# Inverse test
+@test inverse_test(R; input=u, output=v, rtol=rtol)

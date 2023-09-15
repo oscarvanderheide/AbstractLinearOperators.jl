@@ -50,9 +50,8 @@ mutable struct HaarTransform2D{T}<:AbstractWaveletTransform{T,4,T,4}
 end
 
 function Haar_transform_2D(T::DataType; n_levels::Union{Nothing,Integer}=nothing)
-    stencil = cat([ T(0.5)  T(0.5);  T(0.5) T(0.5)], [-T(0.5) -T(0.5);  T(0.5) T(0.5)],
-                  [-T(0.5)  T(0.5); -T(0.5) T(0.5)], [ T(0.5) -T(0.5); -T(0.5) T(0.5)]; dims=4)
-    return HaarTransform2D{T}(convolution_operator(stencil; stride=2), wavelet_reshape_2D(T), n_levels, nothing, nothing)
+    stencil = cat([ T(0.5)  T(0.5);  T(0.5) T(0.5)], [-T(0.5) -T(0.5);  T(0.5) T(0.5)], [-T(0.5)  T(0.5); -T(0.5) T(0.5)], [ T(0.5) -T(0.5); -T(0.5) T(0.5)]; dims=4)
+    return HaarTransform2D{T}(convolution_operator(stencil; stride=2, flipped=true), wavelet_reshape_2D(T), n_levels, nothing, nothing)
 end
 
 AbstractLinearOperators.domain_size(W::HaarTransform2D) = ~is_init(W) ? nothing : input_dims(W.cdims_level[1])
