@@ -1,125 +1,66 @@
-export AbstractWaveletTransform
-export HaarTransform2D, Haar_transform_2D
-export WaveletReshape2D, wavelet_reshape_2D
-
-abstract type AbstractWaveletTransform{T1,N1,T2,N2}<:AbstractLinearOperator{T1,N1,T2,N2} end
+export HaarTransform, Haar_transform
 
 
-# Wavelet reshape operator (multi-channel to image flattening)
+# Haar transform
 
-struct WaveletReshape2D{T}<:AbstractLinearOperator{T,4,T,4} end
+mutable struct HaarTransform{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb}
+    op::ConvolutionOperator{T,N,Nb}
+    factor::Union{Nothing,T}
+end
 
-wavelet_reshape_2D(T::DataType) = WaveletReshape2D{T}()
+Haar_transform(::Type{T}, N::Integer; orthogonal::Bool=true) where T = HaarTransform{T,N,N+2}(convolution_operator(Haar_stencil(T, N); stride=2, flipped=true), orthogonal ? nothing : (sqrt(T(2))/2)^N)
 
-AbstractLinearOperators.label(::WaveletReshape2D) = "WaveletReshape2D"
+AbstractLinearOperators.domain_size(W::HaarTransform) = domain_size(W.op)
+AbstractLinearOperators.range_size(W::HaarTransform)  = range_size(W.op)
+AbstractLinearOperators.label(::HaarTransform) = "HaarTransform"
 
-function AbstractLinearOperators.matvecprod(::WaveletReshape2D{T}, u::AbstractArray{T,4}) where {T}
-    nx, ny, nc, nb = size(u)
-    nx_ = 2*nx; ny_ = 2*ny; nc_ = div(nc,4)
-    ū = similar(u, T, nx_, ny_, nc_, nb)
-    @inbounds for i = 1:2, j = 1:2
-        k = i+2*(j-1)
-        ū[(i-1)*nx+1:i*nx,(j-1)*ny+1:j*ny,:,:] .= u[:,:,(k-1)*nc_+1:k*nc_,:]
+function AbstractLinearOperators.matvecprod(W::HaarTransform{T,N,Nb}, u::AbstractArray{T,Nb}; inverse::Bool=false) where {T,N,Nb}
+
+    n..., nc, nb = size(u); nc_ = nc*2^N
+    Wu = similar(u, div.(n,2)..., nc_, nb)
+    idx_spatial = Tuple([Colon() for i = 1:length(n)])
+    @inbounds for c = 1:nc
+        selectdim(Wu, N+1, c:nc:nc_) .= matvecprod(W.op, u[idx_spatial...,c:c,:])
     end
-    return ū
-end
-
-function AbstractLinearOperators.matvecprod_adj(::WaveletReshape2D{T}, ū::AbstractArray{T,4}) where {T}
-    nx_, ny_, nc_, nb = size(ū)
-    nx = div(nx_,2); ny = div(ny_,2); nc = nc_*4
-    u = similar(ū, T, nx, ny, nc, nb)
-    @inbounds for i = 1:2, j = 1:2
-        k = i+2*(j-1)
-        u[:,:,(k-1)*nc_+1:k*nc_,:] .= ū[(i-1)*nx+1:i*nx,(j-1)*ny+1:j*ny,:,:]
-    end
-    return u
-end
-
-AbstractLinearOperators.invmatvecprod(R::WaveletReshape2D{T}, ū::AbstractArray{T,4}) where {T} = matvecprod_adj(R, ū)
-AbstractLinearOperators.invmatvecprod_adj(R::WaveletReshape2D{T}, u::AbstractArray{T,4}) where {T} = matvecprod(R, u)
-
-
-# Haar transform (2D)
-
-mutable struct HaarTransform2D{T}<:AbstractWaveletTransform{T,4,T,4}
-    op::ConvolutionOperator{T,2,4}
-    flatten::WaveletReshape2D{T}
-    n_levels::Union{Nothing,Integer}
-    cdims_level
-    idx_level
-end
-
-function Haar_transform_2D(T::DataType; n_levels::Union{Nothing,Integer}=nothing)
-    stencil = cat([ T(0.5)  T(0.5);  T(0.5) T(0.5)], [-T(0.5) -T(0.5);  T(0.5) T(0.5)], [-T(0.5)  T(0.5); -T(0.5) T(0.5)], [ T(0.5) -T(0.5); -T(0.5) T(0.5)]; dims=4)
-    return HaarTransform2D{T}(convolution_operator(stencil; stride=2, flipped=true), wavelet_reshape_2D(T), n_levels, nothing, nothing)
-end
-
-AbstractLinearOperators.domain_size(W::HaarTransform2D) = ~is_init(W) ? nothing : input_dims(W.cdims_level[1])
-AbstractLinearOperators.range_size(W::HaarTransform2D)  = ~is_init(W) ? nothing : output_dims(W.cdims_level[1])
-AbstractLinearOperators.label(::HaarTransform2D) = "HaarTransform2D"
-
-function AbstractLinearOperators.matvecprod(W::HaarTransform2D{T}, u::AbstractArray{T,4}) where {T}
-    ~is_init(W) && initialize!(W, u)
-    Wu = copy(u)
-    @inbounds for l = 1:n_levels(W)
-        set_cdims!(W.op, W.cdims_level[l])
-        Wu[W.idx_level[l]..., :, :] .= W.flatten*(W.op*Wu[W.idx_level[l]..., :, :])
-    end
+    ~isnothing(W.factor) && (~inverse ? (Wu .*= W.factor) : (Wu ./= W.factor))
     return Wu
+
 end
 
-function AbstractLinearOperators.matvecprod_adj(W::HaarTransform2D{T}, v::AbstractArray{T,4}) where {T}
-    WTv = copy(v)
-    @inbounds for l = n_levels(W):-1:1
-        set_cdims!(W.op, W.cdims_level[l])
-        WTv[W.idx_level[l]..., :, :] .= W.op'*(W.flatten'*WTv[W.idx_level[l]..., :, :])
+function AbstractLinearOperators.matvecprod_adj(W::HaarTransform{T,N,Nb}, Wu::AbstractArray{T,Nb}; inverse::Bool=false) where {T,N,Nb}
+
+    n..., nc_, nb = size(Wu); nc = div(nc_,2^N)
+    u = similar(Wu, n.*2..., nc, nb)
+    idx_spatial = Tuple([Colon() for i = 1:length(n)])
+    @inbounds for c = 1:nc
+        selectdim(u, N+1, c:c) .= matvecprod_adj(W.op, Wu[idx_spatial...,c:nc:nc_,:])
     end
-    return WTv
+    ~isnothing(W.factor) && (~inverse ? (u .*= W.factor) : (u ./= W.factor))
+    return u
+
 end
 
-AbstractLinearOperators.invmatvecprod(W::HaarTransform2D{T}, v::AbstractArray{T,4}) where {T} = matvecprod_adj(W, v)
-AbstractLinearOperators.invmatvecprod_adj(W::HaarTransform2D{T}, u::AbstractArray{T,4}) where {T} = matvecprod(W, u)
-
-is_init(W::HaarTransform2D) = ~isnothing(W.cdims_level)
-function initialize!(W::HaarTransform2D{T}, u::AbstractArray{T,4}) where {T}
-    initialize!(W.op, u)
-    nx, ny, _, nb = size(u)
-    n_levels = _maxtransformlevels(u)
-    if isnothing(W.n_levels)
-        W.n_levels = n_levels
-    else
-        n_levels < W.n_levels ? (@warn "The number of transform levels specified exceeds the maximum. Resetting..."; W.n_levels = n_levels) : (n_levels = W.n_levels)
-    end
-    cdims_level = Vector{DenseConvDims}(undef, n_levels)
-    idx_level = Vector{NTuple{2,UnitRange{Int}}}(undef, n_levels)
-    @inbounds for l = 1:n_levels
-        nx_l = div(nx,2^(l-1)); ny_l = div(ny,2^(l-1))
-        idx_level[l] =  (1:nx_l, 1:ny_l)
-        cdims_level[l] = DenseConvDims((nx_l, ny_l, 1, nb), (2, 2, 1, 4); stride=2)
-    end
-    W.cdims_level = Tuple(cdims_level)
-    W.idx_level = Tuple(idx_level)
-end
-n_levels(W) = length(W.cdims_level)
+AbstractLinearOperators.invmatvecprod(W::HaarTransform{T,N,Nb}, v::AbstractArray{T,Nb}) where {T,N,Nb} = matvecprod_adj(W, v; inverse=true)
+AbstractLinearOperators.invmatvecprod_adj(W::HaarTransform{T,N,Nb}, u::AbstractArray{T,Nb}) where {T,N,Nb} = matvecprod(W, u; inverse=true)
 
 
 # Haar utils
 
-_maxtransformlevels(x::AbstractArray{T,4}) where T = minimum(_maxtransformlevels.(size(x)[1:2]))
+function Haar_stencil(::Type{T}, N::Integer) where T
 
-function _maxtransformlevels(arraysize::Integer)
-    arraysize > 1 || return 0
-    tl = 0
-    while _sufficientpoweroftwo(arraysize, tl)
-        tl += 1
-    end
-    return tl - 1
-end
+    # One-dimensional case
+    (N == 1) && (return cat([1; 1], [-1; 1]; dims=3)/sqrt(T(2)))
 
-function _sufficientpoweroftwo(x::AbstractArray, L::Integer)
-    for i = 1:ndims(x)
-        _sufficientpoweroftwo(size(x,i), L) || return false
+    # Initialize stencil
+    H = Array{T,N+2}(undef,2*ones(Int,N)...,1,2^N)
+
+    # Recursive definition
+    H_1   = Haar_stencil(T, 1)
+    H_Nm1 = Haar_stencil(T, N-1)
+    @inbounds for i = 1:2^(N-1), j = 1:2
+        selectdim(selectdim(H, N+2, 2^(N-1)*(j-1)+i), N+1, 1) .= selectdim(selectdim(H_Nm1, N+1, i), N, 1).*reshape(H_1[:,1,j],ones(Int,N-1)...,2)
     end
-    return true
+
+    return H
+
 end
-_sufficientpoweroftwo(n::Integer, L::Integer) = (n%(2^L) == 0)

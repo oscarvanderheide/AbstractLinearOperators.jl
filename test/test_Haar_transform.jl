@@ -2,31 +2,27 @@ using AbstractLinearOperators, CUDA, cuDNN, Test
 CUDA.allowscalar(false)
 
 T = Float64
-N = 2
 input_size = 2^6
-st_size = 3
-nc = 1
+nc = 3
 nb = 4
 rtol = T(1e-6)
 
-# Linear operator
-W = Haar_transform_2D(T)
+println("Test Haar transform")
+for N = 1:3, orthogonal = [true, false], device = [:gpu, :cpu]
+    println("N=", N, "; orthogonal=", orthogonal, "; device=", device)
 
-# Adjoint test
-u = randn(T, input_size*ones(Integer, N)..., nc, nb)
-v = randn(T, input_size*ones(Integer, N)..., nc, nb)
-@test adjoint_test(W; input=u, output=v, rtol=rtol)
+    # Linear operator
+    W = Haar_transform(T, N; orthogonal=orthogonal)
 
-# Inverse test
-@test inverse_test(W; input=u, output=v, rtol=rtol)
+    # Random input
+    n = input_size*ones(Integer, N)
+    u = randn(T, n..., nc, nb); (device == :gpu) && (u = CuArray(u))
+    v = randn(T, div.(n, 2)..., nc*2^N, nb); (device == :gpu) && (v = CuArray(v))
 
-# Linear operator
-W = Haar_transform_2D(T)
+    # Adjoint test
+    @test adjoint_test(W; input=u, output=v, rtol=rtol)
 
-# Adjoint test
-u = CUDA.randn(T, input_size*ones(Integer, N)..., nc, nb)
-v = CUDA.randn(T, input_size*ones(Integer, N)..., nc, nb)
-@test adjoint_test(W; input=u, output=v, rtol=rtol)
+    # Inverse test
+    @test inverse_test(W; input=u, output=v, rtol=rtol)
 
-# Inverse test
-@test inverse_test(W; input=u, output=v, rtol=rtol)
+end
