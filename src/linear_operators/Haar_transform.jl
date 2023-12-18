@@ -8,7 +8,7 @@ mutable struct HaarTransform{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb}
     factor::Union{Nothing,T}
 end
 
-Haar_transform(::Type{T}, N::Integer; orthogonal::Bool=true) where T = HaarTransform{T,N,N+2}(convolution_operator(Haar_stencil(T, N); stride=2, flipped=true), orthogonal ? nothing : (sqrt(T(2))/2)^N)
+Haar_transform(::Type{T}, N::Integer; orthogonal::Bool=true) where T = HaarTransform{T,N,N+2}(convolution_operator(Haar_stencil(T, N); stride=2, flipped=false), orthogonal ? nothing : (sqrt(T(2))/2)^N)
 
 AbstractLinearOperators.domain_size(W::HaarTransform) = domain_size(W.op)
 AbstractLinearOperators.range_size(W::HaarTransform)  = range_size(W.op)
@@ -58,7 +58,7 @@ function Haar_stencil(::Type{T}, N::Integer) where T
     H_1   = Haar_stencil(T, 1)
     H_Nm1 = Haar_stencil(T, N-1)
     @inbounds for i = 1:2^(N-1), j = 1:2
-        selectdim(selectdim(H, N+2, 2^(N-1)*(j-1)+i), N+1, 1) .= selectdim(selectdim(H_Nm1, N+1, i), N, 1).*reshape(H_1[:,1,j],ones(Int,N-1)...,2)
+        selectdim(selectdim(H, N+2, 2^(N-1)*(j-1)+i), N+1, 1) .= H_1[:,1,j].*reshape(selectdim(selectdim(H_Nm1, N+1, i), N, 1),1,2*ones(Int,N-1)...)
     end
 
     return H
