@@ -16,7 +16,7 @@ function gradient_operator(h::NTuple{N,T}) where {T<:Real,N}
         idx[i] = 2
         stencil[idx..., 1, i] =  1/h[i]
     end
-    return GradientOperator{T,N,N+2}(convolution_operator(stencil; flipped=true))
+    return GradientOperator{T,N,N+2}(convolution_operator(stencil; flipped=true, cdims_onthefly=false))
 end
 
 AbstractLinearOperators.domain_size(∇::GradientOperator) = domain_size(∇.op)

@@ -13,13 +13,14 @@ mutable struct ConvolutionOperator{T,N,Nb}<:AbstractConvolutionOperator{T,N,Nb}
     flipped::Bool
     groups
     cdims::Union{Nothing,DenseConvDims}
+    cdims_onthefly::Bool
 end
 
 convolution_operator(
     stencil::AbstractArray{T,Nb};
     stride=1, padding=0, dilation=1, flipped::Bool=false, groups=1,
-    cdims::Union{Nothing,DenseConvDims}=nothing) where {T,Nb} =
-    ConvolutionOperator{T,Nb-2,Nb}(stencil, stride, padding, dilation, flipped, groups, cdims)
+    cdims::Union{Nothing,DenseConvDims}=nothing, cdims_onthefly::Bool=true) where {T,Nb} =
+    ConvolutionOperator{T,Nb-2,Nb}(stencil, stride, padding, dilation, flipped, groups, cdims, cdims_onthefly)
 
 AbstractLinearOperators.domain_size(C::ConvolutionOperator) = ~is_init(C) ? nothing : input_dims(C.cdims)
 AbstractLinearOperators.range_size(C::ConvolutionOperator)  = ~is_init(C) ? nothing : output_dims(C.cdims)
@@ -37,12 +38,11 @@ function AbstractLinearOperators.matvecprod(C::ConvolutionOperator{T,N,Nb}, u::A
 end
 AbstractLinearOperators.matvecprod_adj(C::ConvolutionOperator{T,N,Nb}, v::AbstractArray{T,Nb}) where {T,N,Nb} = ∇conv_data(v, C.stencil, C.cdims)
 
-is_init(C) = ~isnothing(C.cdims)
+is_init(C) = ~C.cdims_onthefly && ~isnothing(C.cdims)
 function initialize!(C::ConvolutionOperator{T,N,Nb}, u::AbstractArray{T,Nb}) where {T,N,Nb}
     C.stencil = convert(typeof(u), C.stencil)
     C.cdims = DenseConvDims(size(u), size(C.stencil); stride=C.stride, padding=C.padding, dilation=C.dilation, flipkernel=C.flipped, groups=C.groups)
 end
-set_cdims!(C::ConvolutionOperator, cdims::DenseConvDims) = (C.cdims = cdims)
 
 function to_full_matrix(C::ConvolutionOperator{T,N,Nb}) where {T,N,Nb}
 

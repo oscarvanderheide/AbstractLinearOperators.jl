@@ -14,7 +14,7 @@ for N = 1:3
     # Linear operator
     stencil = randn(T, st_size*ones(Integer, N)..., nc_in, nc_out)
     padding = Tuple([rand(0:st_size) for i = 1:2*N])
-    C = convolution_operator(stencil; padding=padding)
+    C = convolution_operator(stencil; padding=padding, cdims_onthefly=false)
 
     # Adjoint test
     u = randn(T, input_size*ones(Integer, N)..., nc_in, nb)
