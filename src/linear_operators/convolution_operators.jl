@@ -38,7 +38,7 @@ function AbstractLinearOperators.matvecprod(C::ConvolutionOperator{T,N,Nb}, u::A
 end
 AbstractLinearOperators.matvecprod_adj(C::ConvolutionOperator{T,N,Nb}, v::AbstractArray{T,Nb}) where {T,N,Nb} = ∇conv_data(v, C.stencil, C.cdims)
 
-is_init(C) = ~C.cdims_onthefly && ~isnothing(C.cdims)
+is_init(C::ConvolutionOperator) = ~C.cdims_onthefly && ~isnothing(C.cdims)
 function initialize!(C::ConvolutionOperator{T,N,Nb}, u::AbstractArray{T,Nb}) where {T,N,Nb}
     C.stencil = convert(typeof(u), C.stencil)
     C.cdims = DenseConvDims(size(u), size(C.stencil); stride=C.stride, padding=C.padding, dilation=C.dilation, flipkernel=C.flipped, groups=C.groups)
