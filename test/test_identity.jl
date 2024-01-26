@@ -3,7 +3,7 @@ using AbstractLinearOperators, Test
 # Linear operator
 input_size = (2^7, 2^8)
 T = ComplexF64
-Id = identity_operator(T; size=input_size)
+Id = identity_operator(T, 2; size=input_size)
 
 # Identity test
 rtol = real(T)(1e-6)

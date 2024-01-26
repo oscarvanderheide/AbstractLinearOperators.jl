@@ -9,7 +9,7 @@ struct IdentityOperator{T,N}<:AbstractLinearOperator{T,N,T,N}
     size::Union{Nothing, NTuple{N,Integer}}
 end
 
-identity_operator(T::DataType; size::Union{Nothing, NTuple{N,Integer}}=nothing) where N = IdentityOperator{T,N}(size)
+identity_operator(T::DataType, N::Integer; size::Union{Nothing, NTuple}=nothing) = IdentityOperator{T,N}(size)
 
 domain_size(I::IdentityOperator) = I.size
 range_size(I::IdentityOperator) = I.size
