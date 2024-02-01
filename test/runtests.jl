@@ -1,4 +1,5 @@
-using AbstractLinearOperators, CUDA, cuDNN, Test
+using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test
+CUDA.allowscalar(false)
 
 @testset "AbstractLinearOperators.jl" begin
     include("./test_linalg.jl")

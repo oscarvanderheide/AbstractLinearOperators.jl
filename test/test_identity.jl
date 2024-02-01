@@ -1,5 +1,3 @@
-using AbstractLinearOperators, Test
-
 # Linear operator
 input_size = (2^7, 2^8)
 T = ComplexF64

@@ -3,27 +3,30 @@ export GradientOperator, gradient_operator
 
 # Gradient
 
-struct GradientOperator{T<:Real,N,M}<:AbstractLinearOperator{T,M,T,M}
-    op::AbstractLinearOperator{T,M,T,M}
+struct GradientOperator{T<:Real,N,M}<:AbstractLinearOperator{T,N,T,M}
+    op::AbstractLinearOperator
+    batch::Bool
 end
 
-function gradient_operator(h::NTuple{N,T}) where {T<:Real,N}
-    stencil_size = Tuple([[2 for i = 1:N]..., 1, N])
+function gradient_operator(h::NTuple{D,T}; batch::Bool=false) where {T<:Real,D}
+    stencil_size = Tuple([[2 for i = 1:D]..., 1, D])
     stencil = zeros(T, stencil_size)
-    for i = 1:N
-        idx = ones(Int, N)
+    for i = 1:D
+        idx = ones(Int, D)
         stencil[idx..., 1, i] = -1/h[i]
         idx[i] = 2
         stencil[idx..., 1, i] =  1/h[i]
     end
-    return GradientOperator{T,N,N+2}(convolution_operator(stencil; flipped=true, cdims_onthefly=false))
+    N = batch ? D+2 : D
+    M = batch ? D+2 : D+1
+    return GradientOperator{T,N,M}(convolution_operator(stencil; flipped=true, cdims_onthefly=false), batch)
 end
 
-AbstractLinearOperators.domain_size(∇::GradientOperator) = domain_size(∇.op)
-AbstractLinearOperators.range_size(∇::GradientOperator) = range_size(∇.op)
+AbstractLinearOperators.domain_size(∇::GradientOperator{T,N,M}) where {T,N,M} = domain_size(∇.op)[1:N]
+AbstractLinearOperators.range_size( ∇::GradientOperator{T,N,M}) where {T,N,M} = range_size(∇.op)[1:M]
 AbstractLinearOperators.label(::GradientOperator) = "∇"
 
-AbstractLinearOperators.matvecprod(∇::GradientOperator{T,N,M}, u::AbstractArray{T,M}) where {T,N,M} = matvecprod(∇.op, u)
-AbstractLinearOperators.matvecprod_adj(∇::GradientOperator{T,N,M}, u::AbstractArray{T,M}) where {T,N,M} = matvecprod_adj(∇.op, u)
+AbstractLinearOperators.matvecprod(∇::GradientOperator{T,N,M}, u::AbstractArray{T,N}) where {T,N,M} = ∇.batch ? matvecprod(∇.op, u) : dropdims(matvecprod(∇.op, reshape(u, size(u)...,1,1)); dims=N+2)
+AbstractLinearOperators.matvecprod_adj(∇::GradientOperator{T,N,M}, v::AbstractArray{T,M}) where {T,N,M} = ∇.batch ? matvecprod_adj(∇.op, v) : dropdims(matvecprod_adj(∇.op, reshape(v, size(v)...,1)); dims=Tuple(M:M+1))
 
 AbstractLinearOperators.to_full_matrix(G::GradientOperator) = to_full_matrix(G.op)

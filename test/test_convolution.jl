@@ -1,6 +1,3 @@
-using AbstractLinearOperators, CUDA, cuDNN, Test
-CUDA.allowscalar(false)
-
 T = Float64
 input_size = 2^6
 st_size = 3
@@ -18,9 +15,9 @@ for N = 1:3, device = [:cpu, :gpu]
 
     # Adjoint test
     if device == :cpu
-    u = randn(T, input_size*ones(Integer, N)..., nc_in, nb)
-    output_size = size(C*u) # initialize
-    v = randn(T, output_size)
+        u = randn(T, input_size*ones(Integer, N)..., nc_in, nb)
+        output_size = size(C*u) # initialize
+        v = randn(T, output_size)
     else
         u = CUDA.randn(T, input_size*ones(Integer, N)..., nc_in, nb)
         output_size = size(C*u) # initialize

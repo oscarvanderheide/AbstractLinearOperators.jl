@@ -1,5 +1,3 @@
-using LinearAlgebra, Test, AbstractLinearOperators
-
 # Custom-type module
 module ModuleCustomType
     using AbstractLinearOperators

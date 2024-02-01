@@ -1,6 +1,3 @@
-using AbstractLinearOperators, CUDA, cuDNN, Test
-CUDA.allowscalar(false)
-
 T = Float64
 input_size = 2^6
 nc = 3
@@ -26,3 +23,4 @@ for N = 1:3, orthogonal = [true, false], device = [:gpu, :cpu]
     @test inverse_test(W; input=u, output=v, rtol=rtol)
 
 end
+println()

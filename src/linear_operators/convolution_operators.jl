@@ -22,8 +22,8 @@ convolution_operator(
     cdims::Union{Nothing,DenseConvDims}=nothing, cdims_onthefly::Bool=true) where {T,Nb} =
     ConvolutionOperator{T,Nb-2,Nb}(stencil, stride, padding, dilation, flipped, groups, cdims, cdims_onthefly)
 
-AbstractLinearOperators.domain_size(C::ConvolutionOperator) = ~is_init(C) ? nothing : input_dims(C.cdims)
-AbstractLinearOperators.range_size(C::ConvolutionOperator)  = ~is_init(C) ? nothing : output_dims(C.cdims)
+AbstractLinearOperators.domain_size(C::ConvolutionOperator{T,N,Nb}) where {T,N,Nb} = ~is_init(C) ? Tuple(Vector{Nothing}(undef,Nb)) : input_dims(C.cdims)
+AbstractLinearOperators.range_size(C::ConvolutionOperator{T,N,Nb}) where {T,N,Nb} = ~is_init(C) ? Tuple(Vector{Nothing}(undef,Nb)) : output_dims(C.cdims)
 AbstractLinearOperators.label(::ConvolutionOperator) = "Conv"
 
 input_dims(cdims::DenseConvDims)  = Tuple([NNlib.input_size(cdims)...,  NNlib.channels_in(cdims),  "nb"])

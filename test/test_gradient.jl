@@ -1,50 +1,37 @@
-using AbstractLinearOperators, CUDA, cuDNN, Test
-CUDA.allowscalar(false)
-
 T = Float64
 input_size = 2^6
 rtol = T(1e-6)
 nb = 2
 
-for N = [2, 3]
+println("Testing gradient operator:")
+for D = 1:3, batch = [false, true], device = [:cpu, :gpu]
+    println("D=", D, "; batch=", batch, "; device=", device)
 
     # Gradient operator
-    h = Tuple(abs.(randn(T, N)))
-    ∇ = gradient_operator(h)
+    h = Tuple(abs.(randn(T, D)))
+    ∇ = gradient_operator(h; batch=batch)
 
     # Adjoint test
-    sz = input_size*ones(Integer, N)
-    u = randn(T, Tuple(sz)..., 1, nb); output_size = size(∇*u)
-    v = randn(T, output_size)
+    size_in = batch ? (input_size*ones(Integer, D)..., 1, nb) : Tuple(input_size*ones(Integer, D))
+    size_out = batch ? ((input_size-1)*ones(Integer, D)..., D, nb) : ((input_size-1)*ones(Integer, D)..., D)
+    if device == :cpu
+        u = randn(T, size_in)
+        v = randn(T, size_out)
+    else
+        u = CUDA.randn(T, size_in)
+        v = CUDA.randn(T, size_out)
+    end
     @test adjoint_test(∇; input=u, output=v, rtol=rtol)
 
-end
-
-for N = [2, 3]
-
-    # Gradient linear operator
-    h = Tuple(abs.(randn(T, N)))
-    ∇ = gradient_operator(h)
-
-    # Adjoint test
-    sz = input_size*ones(Integer, N)
-    u = CUDA.randn(T, Tuple(sz)..., 1, nb); output_size = size(∇*u)
-    v = CUDA.randn(T, output_size)
-    @test adjoint_test(∇; input=u, output=v, rtol=rtol)
+    # Matrix coherency test
+    if device == :cpu
+        ∇mat = to_full_matrix(∇)
+        if batch
+            @test ∇mat*reshape(u, :, nb) ≈ reshape(∇*u, :, nb) rtol=rtol
+        else
+            @test ∇mat*vec(u) ≈ vec(∇*u) rtol=rtol
+        end
+    end
 
 end
-
-# Matrix coherency
-for N = [2, 3]
-
-    # Gradient operator
-    h = Tuple(abs.(randn(T, N)))
-    ∇ = gradient_operator(h)
-
-    # Coherence test
-    sz = input_size*ones(Integer, N)
-    u = randn(T, Tuple(sz)..., 1, nb); output_size = size(∇*u)
-    ∇mat = to_full_matrix(∇)
-    @test ∇mat*reshape(u, :, nb) ≈ reshape(∇*u, :, nb) rtol=rtol
-
-end
+println()

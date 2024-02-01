@@ -11,8 +11,8 @@ abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 
 # Base functions
 
-domain_size(::AbstractLinearOperator) = nothing
-range_size(::AbstractLinearOperator) = nothing
+domain_size(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,ND))
+range_size(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,NR))
 label(::AbstractLinearOperator) = nothing
 matvecprod(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = matvecprod!(similar(u, range_size(A)), A, u)
 matvecprod_adj(A::AbstractLinearOperator{TD,ND,TR,NR}, v::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = matvecprod_adj!(similar(v, domain_size(A)), A, v)
