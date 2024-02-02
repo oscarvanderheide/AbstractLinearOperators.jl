@@ -12,8 +12,15 @@ abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 # Base functions
 
 domain_size(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,ND))
-range_size(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,NR))
+range_size( ::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,NR))
+
 label(::AbstractLinearOperator) = nothing
+
+matvecprod!(       ::AbstractArray{TD,ND}, ::AbstractLinearOperator{TD,ND,TR,NR}, ::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = throw(ArgumentError("Product not implemented for this operator"))
+matvecprod_adj!(   ::AbstractArray{TD,ND}, ::AbstractLinearOperator{TD,ND,TR,NR}, ::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = throw(ArgumentError("Adjoint product not implemented for this operator"))
+invmatvecprod!(    ::AbstractArray{TD,ND}, ::AbstractLinearOperator{TD,ND,TR,NR}, ::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = throw(ArgumentError("Inverse product not implemented for this operator"))
+invmatvecprod_adj!(::AbstractArray{TD,ND}, ::AbstractLinearOperator{TD,ND,TR,NR}, ::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = throw(ArgumentError("Adjoint inverse product not implemented for this operator"))
+
 matvecprod(A::AbstractLinearOperator{TD,ND,TR,NR}, u::AbstractArray{TD,ND}) where {TD,ND,TR,NR} = matvecprod!(similar(u, range_size(A)), A, u)
 matvecprod_adj(A::AbstractLinearOperator{TD,ND,TR,NR}, v::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = matvecprod_adj!(similar(v, domain_size(A)), A, v)
 invmatvecprod(A::AbstractLinearOperator{TD,ND,TR,NR}, v::AbstractArray{TR,NR}) where {TD,ND,TR,NR} = invmatvecprod!(similar(v, range_size(A)), A, v)
