@@ -1,3 +1,7 @@
+using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test, Random
+CUDA.allowscalar(false)
+Random.seed!(42)
+
 # Linear operator
 input_size = (2^7, 2^8)
 output_size = (2^7, 2, 2^7)

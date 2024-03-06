@@ -1,3 +1,7 @@
+using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test, Random
+CUDA.allowscalar(false)
+Random.seed!(42)
+
 T = Float64
 input_size = 2^6
 nc = 3

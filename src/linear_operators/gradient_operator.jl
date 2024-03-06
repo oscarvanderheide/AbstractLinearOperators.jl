@@ -3,14 +3,14 @@ export GradientOperator, gradient_operator
 
 # Gradient
 
-struct GradientOperator{T<:Real,N,M}<:AbstractLinearOperator{T,N,T,M}
+struct GradientOperator{T,N,M}<:AbstractLinearOperator{T,N,T,M}
     op::AbstractLinearOperator
     batch::Bool
 end
 
-function gradient_operator(h::NTuple{D,T}; batch::Bool=false) where {T<:Real,D}
+function gradient_operator(::Type{CT}, h::NTuple{D,T}; batch::Bool=false) where {T<:Real,D,CT<:RealOrComplex{T}}
     stencil_size = Tuple([[2 for i = 1:D]..., 1, D])
-    stencil = zeros(T, stencil_size)
+    stencil = zeros(CT, stencil_size)
     for i = 1:D
         idx = ones(Int, D)
         stencil[idx..., 1, i] = -1/h[i]
@@ -19,7 +19,7 @@ function gradient_operator(h::NTuple{D,T}; batch::Bool=false) where {T<:Real,D}
     end
     N = batch ? D+2 : D
     M = batch ? D+2 : D+1
-    return GradientOperator{T,N,M}(convolution_operator(stencil; flipped=true, cdims_onthefly=false), batch)
+    return GradientOperator{CT,N,M}(convolution_operator(stencil; flipped=true, cdims_onthefly=false), batch)
 end
 
 AbstractLinearOperators.domain_size(∇::GradientOperator{T,N,M}) where {T,N,M} = domain_size(∇.op)[1:N]

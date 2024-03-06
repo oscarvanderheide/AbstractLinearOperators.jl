@@ -1,3 +1,7 @@
+using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test, Random
+CUDA.allowscalar(false)
+Random.seed!(42)
+
 # Custom-type module
 module ModuleCustomType
     using AbstractLinearOperators
