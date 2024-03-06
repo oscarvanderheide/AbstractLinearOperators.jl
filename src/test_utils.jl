@@ -2,8 +2,6 @@
 
 export adjoint_test, inverse_test, left_inverse_test, right_inverse_test
 
-const RealOrComplex{T<:Real} = Union{T, Complex{T}}
-
 function adjoint_test(A::AbstractLinearOperator{CTD,ND,CTR,NR};
                       input::Union{Nothing,AbstractArray{CTD,ND}}=nothing,
                       output::Union{Nothing,AbstractArray{CTR,NR}}=nothing,
