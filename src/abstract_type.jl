@@ -1,6 +1,6 @@
 #: Abstract types
 export AbstractLinearOperator,
-       domain_size, range_size,
+       domain_size, range_size, domain_eltype, range_eltype,
        label,
        matvecprod!, matvecprod_adj!, invmatvecprod!, invmatvecprod_adj!,
        matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj,
@@ -13,6 +13,8 @@ abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
 
 domain_size(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,ND))
 range_size( ::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = Tuple(Vector{Nothing}(undef,NR))
+domain_eltype(::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = TD
+range_eltype( ::AbstractLinearOperator{TD,ND,TR,NR}) where {TD,ND,TR,NR} = TR
 
 label(::AbstractLinearOperator) = nothing
 
