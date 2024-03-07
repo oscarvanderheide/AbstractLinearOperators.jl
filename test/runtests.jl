@@ -1,5 +1,6 @@
-using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test
+using AbstractLinearOperators, LinearAlgebra, CUDA, Test, Random
 CUDA.allowscalar(false)
+Random.seed!(42)
 
 @testset "AbstractLinearOperators.jl" begin
     include("./test_linalg.jl")

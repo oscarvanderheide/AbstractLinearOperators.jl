@@ -1,4 +1,4 @@
-using AbstractLinearOperators, LinearAlgebra, CUDA, cuDNN, Test, Random
+using AbstractLinearOperators, LinearAlgebra, CUDA, Test, Random
 CUDA.allowscalar(false)
 Random.seed!(42)
 

@@ -3,7 +3,7 @@ module AbstractLinearOperators
 RealOrComplex{T<:Real} = Union{T,Complex{T}}
 
 # Modules
-using LinearAlgebra, SparseArrays, NNlib
+using LinearAlgebra, SparseArrays, Flux
 
 # Abstract type
 include("./abstract_type.jl")
