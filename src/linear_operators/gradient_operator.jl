@@ -4,7 +4,7 @@ export GradientOperator, gradient_operator
 # Gradient
 
 struct GradientOperator{T,N,M}<:AbstractLinearOperator{T,N,T,M}
-    op::AbstractLinearOperator
+    op::AbstractConvolutionOperator{T}
     batch::Bool
 end
 

@@ -3,40 +3,46 @@ export HaarTransform, Haar_transform
 
 # Haar transform
 
-mutable struct HaarTransform{T,N,Nb}<:AbstractLinearOperator{T,Nb,T,Nb}
-    op::ConvolutionOperator{T,N,Nb}
+mutable struct HaarTransform{T,N,M}<:AbstractLinearOperator{T,N,T,M}
+    op::AbstractConvolutionOperator{T}
     factor::Union{Nothing,T}
+    batch::Bool
 end
 
-Haar_transform(::Type{T}, N::Integer; orthogonal::Bool=true) where T = HaarTransform{T,N,N+2}(convolution_operator(Haar_stencil(T, N); stride=2, flipped=false), orthogonal ? nothing : (sqrt(T(2))/2)^N)
+Haar_transform(::Type{T}, D::Integer; orthogonal::Bool=true, batch::Bool=false) where T = HaarTransform{T,batch ? D+2 : D,batch ? D+2 : D+1}(convolution_operator(Haar_stencil(T,D); stride=2, flipped=false), orthogonal ? nothing : (sqrt(T(2))/2)^D, batch)
 
 AbstractLinearOperators.domain_size(W::HaarTransform) = domain_size(W.op)
 AbstractLinearOperators.range_size(W::HaarTransform)  = range_size(W.op)
 AbstractLinearOperators.label(::HaarTransform) = "HaarTransform"
 
-function AbstractLinearOperators.matvecprod(W::HaarTransform{T,N,Nb}, u::AbstractArray{T,Nb}; inverse::Bool=false) where {T,N,Nb}
+function AbstractLinearOperators.matvecprod(W::HaarTransform{T,N,M}, u::AbstractArray{T,N}; inverse::Bool=false) where {T,N,M}
 
-    n..., nc, nb = size(u); nc_ = nc*2^N
+    D = W.batch ? N-2 : N
+    W.batch ? ((n..., nc, nb) = size(u)) :
+              (n = size(u); nc = 1; nb = 1)
+    nc_ = nc*2^D
     Wu = similar(u, div.(n,2)..., nc_, nb)
     idx_spatial = Tuple([Colon() for i = 1:length(n)])
     @inbounds for c = 1:nc
-        selectdim(Wu, N+1, c:nc:nc_) .= matvecprod(W.op, u[idx_spatial...,c:c,:])
+        selectdim(Wu, D+1, c:nc:nc_) .= matvecprod(W.op, u[idx_spatial...,c:c,:])
     end
     ~isnothing(W.factor) && (~inverse ? (Wu .*= W.factor) : (Wu ./= W.factor))
-    return Wu
+    return W.batch ? Wu : dropdims(Wu; dims=D+2)
 
 end
 
-function AbstractLinearOperators.matvecprod_adj(W::HaarTransform{T,N,Nb}, Wu::AbstractArray{T,Nb}; inverse::Bool=false) where {T,N,Nb}
+function AbstractLinearOperators.matvecprod_adj(W::HaarTransform{T,N,M}, Wu::AbstractArray{T,M}; inverse::Bool=false) where {T,N,M}
 
-    n..., nc_, nb = size(Wu); nc = div(nc_,2^N)
+    D = W.batch ? N-2 : N
+    W.batch ? ((n..., nc_, nb) = size(Wu); nc = div(nc_,2^D)) :
+              ((n..., nc_) = size(Wu); nb = 1; nc = div(nc_,2^D))
     u = similar(Wu, n.*2..., nc, nb)
     idx_spatial = Tuple([Colon() for i = 1:length(n)])
     @inbounds for c = 1:nc
-        selectdim(u, N+1, c:c) .= matvecprod_adj(W.op, Wu[idx_spatial...,c:nc:nc_,:])
+        selectdim(u, D+1, c:c) .= matvecprod_adj(W.op, Wu[idx_spatial...,c:nc:nc_,:])
     end
     ~isnothing(W.factor) && (~inverse ? (u .*= W.factor) : (u ./= W.factor))
-    return u
+    return W.batch ? u : dropdims(u; dims=(D+1,D+2))
 
 end
 
