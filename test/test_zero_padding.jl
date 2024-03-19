@@ -26,5 +26,5 @@ v = randn(T, extended_size(input_size, padding))
 
 # Full-matrix coherence
 u = randn(T, input_size)
-Am = to_full_matrix(A, input_size)
+Am = full_matrix(A, input_size)
 @test vec(A*u) ≈ Am*vec(u) rtol=rtol

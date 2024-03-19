@@ -1,12 +1,13 @@
 #: Abstract types
-export AbstractLinearOperator,
+export AbstractLinearOperator, AbstractAutoLinearOperator,
        domain_size, range_size, domain_eltype, range_eltype,
        label,
        matvecprod!, matvecprod_adj!, invmatvecprod!, invmatvecprod_adj!,
        matvecprod, matvecprod_adj, invmatvecprod, invmatvecprod_adj,
-       to_full_matrix
+       full_matrix
 
 abstract type AbstractLinearOperator{TD<:Number,ND,TR<:Number,NR} end
+abstract type AbstractAutoLinearOperator{T<:Number,N}<:AbstractLinearOperator{T,N,T,N} end
 
 
 # Base functions

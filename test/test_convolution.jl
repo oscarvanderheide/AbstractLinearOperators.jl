@@ -34,7 +34,7 @@ for D = 1:3, device = [:cpu, :gpu], complex = [true, false]
 
     # Full-matrix coherence
     if device == :cpu
-        Cmat = to_full_matrix(C)
+        Cmat = full_matrix(C)
         @test reshape(C*u, :, nb) ≈ Cmat*reshape(u, :, nb) rtol=rtol
     end
 

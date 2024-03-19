@@ -30,7 +30,7 @@ for D = 1:3, batch = [false, true], device = [:cpu, :gpu], complex = [true, fals
 
     # Matrix coherency test
     if device == :cpu
-        ∇mat = to_full_matrix(∇)
+        ∇mat = full_matrix(∇)
         if batch
             @test ∇mat*reshape(u, :, nb) ≈ reshape(∇*u, :, nb) rtol=rtol
         else

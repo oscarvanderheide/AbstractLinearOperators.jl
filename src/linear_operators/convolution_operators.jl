@@ -44,7 +44,7 @@ function initialize!(C::ConvolutionOperator{T,N}, u::AbstractArray{T,N}) where {
     C.cdims = DenseConvDims(size(u), size(C.stencil); stride=C.stride, padding=C.padding, dilation=C.dilation, flipkernel=C.flipped, groups=C.groups)
 end
 
-function to_full_matrix(C::ConvolutionOperator{T,N}) where {T,N}
+function full_matrix(C::ConvolutionOperator{T,N}) where {T,N}
 
     # Apply restriction
     ((C.stride != 1) || (C.dilation != 1) || (C.groups != 1)) && trow(ArgumentError("Method not implemented for stride/dilation/groups not equal to 1")) 
@@ -62,7 +62,7 @@ function to_full_matrix(C::ConvolutionOperator{T,N}) where {T,N}
     # Zero padding matrix
     D = N-2
     P = C.padding isa Integer ? zero_padding_operator(T, D, C.padding) : zero_padding_operator(T, C.padding)
-    Pm = to_full_matrix(P, n_in)
+    Pm = full_matrix(P, n_in)
     padded_size = extended_size(n_in, C.padding)
 
     # Setting diagonal positions
@@ -77,7 +77,7 @@ function to_full_matrix(C::ConvolutionOperator{T,N}) where {T,N}
 
     # Valid-convolution restriction
     padding_conv = Tuple([(j == 1) ? 0 : ssize[i]-1 for j = 1:2, i = 1:D])
-    Qm = to_full_matrix(zero_padding_operator(T, padding_conv), reduced_size(padded_size, padding_conv))
+    Qm = full_matrix(zero_padding_operator(T, padding_conv), reduced_size(padded_size, padding_conv))
 
     # Assembly sparse matrix
     m = prod(padded_size)

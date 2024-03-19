@@ -5,24 +5,17 @@ export IdentityOperator, identity_operator,
 
 # Identity
 
-struct IdentityOperator{T,N}<:AbstractLinearOperator{T,N,T,N}
-    size::Union{Nothing, NTuple{N,Integer}}
-end
+struct IdentityOperator{T,N}<:AbstractAutoLinearOperator{T,N} end
 
-identity_operator(T::DataType, N::Integer; size::Union{Nothing, NTuple}=nothing) = IdentityOperator{T,N}(size)
+identity_operator(T::DataType, N::Integer) = IdentityOperator{T,N}()
 
-domain_size(I::IdentityOperator) = I.size
-range_size(I::IdentityOperator) = I.size
 label(::IdentityOperator) = "Id"
 matvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
 matvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 invmatvecprod(::IdentityOperator{T,N}, u::AbstractArray{T,N}) where {T,N} = u
 invmatvecprod_adj(::IdentityOperator{T,N}, v::AbstractArray{T,N}) where {T,N} = v
 
-function to_full_matrix(Id::IdentityOperator{T,N}) where {T,N}
-    isnothing(Id.size) && throw(ArgumentError("Size must be specified for full matrix conversion"))
-    return spdiagm(0 => ones(T, prod(Id.size)))
-end
+full_matrix(::IdentityOperator{T,N}, size::NTuple) where {T,N} = spdiagm(0 => ones(T, prod(size)))
 
 
 # Reshaping operator

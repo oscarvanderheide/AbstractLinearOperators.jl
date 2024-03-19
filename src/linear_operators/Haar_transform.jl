@@ -46,8 +46,8 @@ function AbstractLinearOperators.matvecprod_adj(W::HaarTransform{T,N,M}, Wu::Abs
 
 end
 
-AbstractLinearOperators.invmatvecprod(W::HaarTransform{T,N,Nb}, v::AbstractArray{T,Nb}) where {T,N,Nb} = matvecprod_adj(W, v; inverse=true)
-AbstractLinearOperators.invmatvecprod_adj(W::HaarTransform{T,N,Nb}, u::AbstractArray{T,Nb}) where {T,N,Nb} = matvecprod(W, u; inverse=true)
+AbstractLinearOperators.invmatvecprod(W::HaarTransform{T,N,M}, v::AbstractArray{T,M}) where {T,N,M} = matvecprod_adj(W, v; inverse=true)
+AbstractLinearOperators.invmatvecprod_adj(W::HaarTransform{T,N,M}, u::AbstractArray{T,N}) where {T,N,M} = matvecprod(W, u; inverse=true)
 
 
 # Haar utils

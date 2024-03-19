@@ -29,4 +29,4 @@ AbstractLinearOperators.label(::GradientOperator) = "∇"
 AbstractLinearOperators.matvecprod(∇::GradientOperator{T,N,M}, u::AbstractArray{T,N}) where {T,N,M} = ∇.batch ? matvecprod(∇.op, u) : dropdims(matvecprod(∇.op, reshape(u, size(u)...,1,1)); dims=N+2)
 AbstractLinearOperators.matvecprod_adj(∇::GradientOperator{T,N,M}, v::AbstractArray{T,M}) where {T,N,M} = ∇.batch ? matvecprod_adj(∇.op, v) : dropdims(matvecprod_adj(∇.op, reshape(v, size(v)...,1)); dims=Tuple(M:M+1))
 
-AbstractLinearOperators.to_full_matrix(G::GradientOperator) = to_full_matrix(G.op)
+AbstractLinearOperators.full_matrix(G::GradientOperator) = full_matrix(G.op)
